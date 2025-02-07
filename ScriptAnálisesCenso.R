@@ -516,18 +516,14 @@ dados = dados %>% mutate(V2537_num = case_when(V2537 == 'Não' ~ 0,V2537 == 'Sim
 Tabela5 = QuiQuadrado_Fisher(dados$V2537_V2567_V2564_V2565,dados$V86cat,'2','chisq.simulate')
 #write.xlsx(DescritivaCat(dados$V2537_V2567_V2564_V2565) %>% as.data.frame(), 'Tabela 5.xlsx', rowNames = T)
 
-DescritivaCat(dados$V341)
 
-dados = dados %>% mutate(V341_num = case_when(V341 == 'Não' ~ 0,V341 == 'Sim' ~ 1),
-                         V342_num = case_when(V342 == 'Não' ~ 0,V342 == 'Sim' ~ 1),
-                         V343_num = case_when(V343 == 'Não' ~ 0,V343 == 'Sim' ~ 1),
-                         V344_num = case_when(V344 == 'Não' ~ 0,V344 == 'Sim' ~ 1),
-                         V345_num = case_when(V345 == 'Não' ~ 0,V345 == 'Sim' ~ 1),
-                         V346_num = case_when(V346 == 'Não' ~ 0,V346 == 'Sim' ~ 1),
-                         V347_num = case_when(V347 == 'Não' ~ 1,V347 == 'Sim' ~ 0),
-                         V2537_V2567_V2564_V2565 = rowSums(across(c(V2537_V2567_num, V2564_num,V2565_num)), na.rm = TRUE))
-
-DescritivaCat(dados$V341)
+dados = dados %>% mutate(
+  V34_cat = factor(case_when(V347 == 'Sim' ~ 'Péssimo',
+                             V341 == 'Sim' & V343 == 'Sim' & V344 == 'Sim' & V345 == 'Sim' & V346 == 'Sim' ~ 'Ótimo',
+                             V342 == 'Sim' & V343 == 'Sim' & V344 == 'Sim' & V345 == 'Sim' & V346 == 'Sim' ~ 'Bom',
+                             V342 == 'Sim' & V343 == 'Sim' & V344 == 'Sim' & V345 == 'Sim' ~ 'Regular',
+                             V343 == 'Sim' & V344 == 'Sim' ~ 'Ruim'), c('Péssimo','Ruim','Regular','Bom','Ótimo')))
+#write.xlsx(DescritivaCat(dados$V34_cat) %>% as.data.frame(), 'Tabela 6.xlsx', rowNames = T)
 
 dados %>% filter(V358 == 'Sim' & V351 == 'Sim')
 #write.xlsx(DescritivaCat(dados$V358) %>% as.data.frame(), 'Tabela 7.xlsx', rowNames = T)
@@ -580,7 +576,52 @@ dados$V374_cat5 =
                    dados$V374_cat >= 8 ~ 'Ótimo'), c('Péssimo/Ruim','Regular','Bom','Ótimo'))
 Tabela11 = rbind(DescritivaCat(dados$V374_cat),
                  DescritivaCat(dados$V374_cat5))
-write.xlsx(Tabela11 %>% as.data.frame(), 'Tabela 11.xlsx', rowNames = T)
+#write.xlsx(Tabela11 %>% as.data.frame(), 'Tabela 11.xlsx', rowNames = T)
+
+dados = dados %>% mutate(V91cat = factor(case_when(V915 == 'Sim' | V916 == 'Sim' | V918 == 'Sim' | V919 == 'Sim' ~ 'Ótimo',
+                                                   V913 == 'Sim' ~ 'Bom',
+                                                   V914 == 'Sim' ~ 'Regular',
+                                                   V912 == 'Sim' | V917 == 'Sim' ~ 'Ruim',
+                                                   V911 == 'Sim' ~ 'Péssimo'), c('Péssimo','Ruim','Regular','Bom','Ótimo')))
+#write.xlsx(DescritivaCat(dados$V91cat) %>% as.data.frame(), 'Tabela 12.xlsx', rowNames = T)
+
+dados = dados %>% mutate(V103cat = factor(case_when(v1036 == 'Sim' | V1034 == 'Sim' | v1035 == 'Sim' ~ 'Ótimo',
+                                                    V1033 == 'Sim' ~ 'Bom',
+                                                    V1032 == 'Sim' ~ 'Regular',
+                                                    v1037 == 'Sim' ~ 'Ruim',
+                                                    V1031 == 'Sim' ~ 'Péssimo'), c('Péssimo','Ruim','Regular','Bom','Ótimo')))
+#write.xlsx(DescritivaCat(dados$V103cat) %>% as.data.frame(), 'Tabela 13.xlsx', rowNames = T)
+
+dados = dados %>% mutate(v1063_num = case_when(v1063 == 'Não' ~ 0,v1063 == 'Sim' ~ 1),
+                         v1064_num = case_when(v1064 == 'Não' ~ 0,v1064 == 'Sim' ~ 1),
+                         v1065_num = case_when(v1065 == 'Não' ~ 0,v1065 == 'Sim' ~ 1),
+                         v1066_num = case_when(v1066 == 'Não' ~ 0,v1066 == 'Sim' ~ 1),
+                         v1065_v1064_v1065_v1066 = rowSums(across(c(v1063_num,v1064_num,v1065_num,v1066_num)), na.rm = TRUE))
+dados$v1065_v1064_v1065_v1066cat = 
+  factor(case_when(dados$v1065_v1064_v1065_v1066 == 0 ~ 'Péssimo/Ruim',
+                   dados$v1065_v1064_v1065_v1066 == 1 ~ 'Regular',
+                   dados$v1065_v1064_v1065_v1066 == 2 | dados$v1065_v1064_v1065_v1066 == 3 ~ 'Bom',
+                   dados$v1065_v1064_v1065_v1066 == 4 ~ 'Ótimo'), c('Péssimo/Ruim','Regular','Bom','Ótimo'))
+#write.xlsx(DescritivaCat(dados$v1065_v1064_v1065_v1066cat) %>% as.data.frame(), 'Tabela 14.xlsx', rowNames = T)
+
+#write.xlsx(DescritivaCat(dados$v120) %>% as.data.frame(), 'Tabela 15.xlsx', rowNames = T)
+
+dados = dados %>% mutate(v1263_num = case_when(v1263 == 'Não' ~ 0,v1263 == 'Sim' ~ 1),
+                         v1264_num = case_when(v1264 == 'Não' ~ 0,v1264 == 'Sim' ~ 1),
+                         v1265_num = case_when(v1263 == 'Não' ~ 0,v1265 == 'Sim' ~ 1),
+                         v1266_num = case_when(v1263 == 'Não' ~ 0,v1266 == 'Sim' ~ 1),
+                         v1267_num = case_when(v1264 == 'Não' ~ 0,v1267 == 'Sim' ~ 1),
+                         v1268_num = case_when(v1263 == 'Não' ~ 0,v1268 == 'Sim' ~ 1),
+                         v1269_num = case_when(v1263 == 'Não' ~ 0,v1269 == 'Sim' ~ 1),
+                         v126_num = rowSums(across(c(v1263_num,v1264_num,v1265_num,v1266_num,v1267_num,v1268_num,v1269_num)), na.rm = TRUE))
+dados$v126_cat = 
+  factor(case_when(dados$v126_num == 0 | dados$v12616 == 'Sim' ~ 'Péssimo',
+                   dados$v126_num == 1 | dados$v126_num == 2 ~ 'Ruim',
+                   dados$v126_num == 3 | dados$v126_num == 4 ~ 'Regular',
+                   dados$v126_num == 5 | dados$v126_num == 6 ~ 'Bom',
+                   dados$v126_num >= 7 ~ 'Ótimo'), c('Péssimo','Ruim','Regular','Bom','Ótimo'))
+write.xlsx(DescritivaCat(dados$v126_cat) %>% as.data.frame(), 'Tabela 16.xlsx', rowNames = T)
+
 
 QuiQuadrado_Fisher(dados$V7esf,dados$V321cat,'2','chisq.simulate')
 QuiQuadrado_Fisher(dados$V7eap,dados$V321cat,'2','chisq.simulate')
