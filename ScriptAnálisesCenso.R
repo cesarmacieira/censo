@@ -604,7 +604,7 @@ dados$v1065_v1064_v1065_v1066cat =
                    dados$v1065_v1064_v1065_v1066 == 4 ~ 'Ótimo'), c('Péssimo/Ruim','Regular','Bom','Ótimo'))
 #write.xlsx(DescritivaCat(dados$v1065_v1064_v1065_v1066cat) %>% as.data.frame(), 'Tabela 14.xlsx', rowNames = T)
 
-#write.xlsx(DescritivaCat(dados$v120) %>% as.data.frame(), 'Tabela 15.xlsx', rowNames = T)
+#write.xlsx(DescritivaCat(dados$v12026) %>% as.data.frame(), 'Tabela 15.xlsx', rowNames = T)
 
 dados = dados %>% mutate(v1263_num = case_when(v1263 == 'Não' ~ 0,v1263 == 'Sim' ~ 1),
                          v1264_num = case_when(v1264 == 'Não' ~ 0,v1264 == 'Sim' ~ 1),
@@ -620,7 +620,7 @@ dados$v126_cat =
                    dados$v126_num == 3 | dados$v126_num == 4 ~ 'Regular',
                    dados$v126_num == 5 | dados$v126_num == 6 ~ 'Bom',
                    dados$v126_num >= 7 ~ 'Ótimo'), c('Péssimo','Ruim','Regular','Bom','Ótimo'))
-write.xlsx(DescritivaCat(dados$v126_cat) %>% as.data.frame(), 'Tabela 16.xlsx', rowNames = T)
+#write.xlsx(DescritivaCat(dados$v126_cat) %>% as.data.frame(), 'Tabela 16.xlsx', rowNames = T)
 
 
 QuiQuadrado_Fisher(dados$V7esf,dados$V321cat,'2','chisq.simulate')
