@@ -623,6 +623,11 @@ dados$v126_cat =
 #write.xlsx(DescritivaCat(dados$v126_cat) %>% as.data.frame(), 'Tabela 16.xlsx', rowNames = T)
 
 
+dados$V33 = factor(dados$V33, c('Não tem acesso à internet',
+                                'Possui acesso à Internet, mas funciona de maneira inadequada (quedas e instabilidades frequentes)',
+                                'Possui acesso à Internet adequado para a execução das atividades'))
+#write.xlsx(DescritivaCat(dados$V33) %>% as.data.frame(), 'Tabela 17.xlsx', rowNames = T)
+
 QuiQuadrado_Fisher(dados$V7esf,dados$V321cat,'2','chisq.simulate')
 QuiQuadrado_Fisher(dados$V7eap,dados$V321cat,'2','chisq.simulate')
 DescritivaCat(dados$V321cat)
