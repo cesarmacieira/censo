@@ -512,10 +512,13 @@ dados = dados %>% mutate(V2537_num = case_when(V2537 == 'Não' ~ 0,V2537 == 'Sim
                          V2537_V2567_num = ifelse(V2537_V2567 >= 1, 1, 0),
                          V2564_num = case_when(V2564 == 'Não' ~ 0,V2564 == 'Sim' ~ 1),
                          V2565_num = case_when(V2565 == 'Não' ~ 0,V2565 == 'Sim' ~ 1),
-                         V2537_V2567_V2564_V2565 = rowSums(across(c(V2537_V2567_num, V2564_num,V2565_num)), na.rm = TRUE))
+                         V2537_V2567_V2564_V2565 = rowSums(across(c(V2537_V2567_num, V2564_num,V2565_num)), na.rm = TRUE),
+                         V2537_V2567_V2564_V2565_cat = factor(case_when(V2537_V2567_V2564_V2565 == 0 ~ 'Péssimo/Ruim',
+                                                                 V2537_V2567_V2564_V2565 == 1 ~ 'Regular',
+                                                                 V2537_V2567_V2564_V2565 == 2 ~ 'Bom',
+                                                                 V2537_V2567_V2564_V2565 == 3 ~ 'Ótimo'),c('Péssimo/Ruim','Regular','Bom','Ótimo')))
 Tabela5 = QuiQuadrado_Fisher(dados$V2537_V2567_V2564_V2565,dados$V86cat,'2','chisq.simulate')
-#write.xlsx(DescritivaCat(dados$V2537_V2567_V2564_V2565) %>% as.data.frame(), 'Tabela 5.xlsx', rowNames = T)
-
+#write.xlsx(DescritivaCat(dados$V2537_V2567_V2564_V2565_cat) %>% as.data.frame(), 'Tabela 5.xlsx', rowNames = T)
 
 dados = dados %>% mutate(
   V34_cat = factor(case_when(V347 == 'Sim' ~ 'Péssimo',
@@ -627,6 +630,52 @@ dados$V33 = factor(dados$V33, c('Não tem acesso à internet',
                                 'Possui acesso à Internet, mas funciona de maneira inadequada (quedas e instabilidades frequentes)',
                                 'Possui acesso à Internet adequado para a execução das atividades'))
 #write.xlsx(DescritivaCat(dados$V33) %>% as.data.frame(), 'Tabela 17.xlsx', rowNames = T)
+
+####===========
+#### Indicador
+####===========
+numerico = function(x){
+  return(case_when(x == 'Péssimo' ~ 1,
+                   x == 'Ruim' ~ 2,
+                   x == 'Regular' ~ 3,
+                   x == 'Bom' ~ 4,
+                   x == 'Ótimo' ~ 5))
+}
+
+dados = dados %>% mutate(V321cat_num = numerico(dados$V321cat),
+                 V325cat_num = case_when(dados$V325cat == 'Ausente' ~ 1, dados$V325cat == 'Presente' ~ 5),
+                 V324cat_num = case_when(dados$V324cat == 'Ausente' ~ 1, dados$V324cat == 'Presente' ~ 5),
+                 V323cat_num = numerico(dados$V323cat),
+                 V2537_V2567_V2564_V2565_cat_num = case_when(dados$V2537_V2567_V2564_V2565_cat == 'Péssimo/Ruim' ~ 1,
+                                                             dados$V2537_V2567_V2564_V2565_cat == 'Regular' ~ 3,
+                                                             dados$V2537_V2567_V2564_V2565_cat == 'Bom' ~ 4,
+                                                             dados$V2537_V2567_V2564_V2565_cat == 'Ótimo' ~ 5),
+                 V34_cat_num = numerico(dados$V34_cat),
+                 V361_V364_num = case_when(dados$V361_V364 == 2 ~ 5,
+                                           dados$V361_V364 == 1 ~ 3
+                                           dados$V361_V364 == 0 ~ 1),
+                 V3711_V3712_V3713_V3714_V3715_V3716cat5_num = numerico(dados$V3711_V3712_V3713_V3714_V3715_V3716cat5),
+                 V374_cat5_num = case_when(dados$V374_cat5 == 'Péssimo/Ruim' ~ 1,
+                                           dados$V374_cat5 == 'Regular' ~ 3,
+                                           dados$V374_cat5 == 'Bom' ~ 4,
+                                           dados$V374_cat5 == 'Ótimo' ~ 5),
+                 V103cat_num = numerico(dados$V103cat), 
+                 v1065_v1064_v1065_v1066cat_num = case_when(dados$v1065_v1064_v1065_v1066cat == 'Péssimo/Ruim' ~ 1,
+                                                            dados$v1065_v1064_v1065_v1066cat == 'Regular' ~ 3,
+                                                            dados$v1065_v1064_v1065_v1066cat == 'Bom' ~ 4,
+                                                            dados$v1065_v1064_v1065_v1066cat == 'Ótimo' ~ 5),
+                 v126_cat_num = numerico(dados$v126_cat),
+                 V33_num = case_when(dados$V33 == 'Possui acesso à Internet adequado para a execução das atividades' ~ 5,
+                                     dados$V33 == 'Possui acesso à Internet, mas funciona de maneira inadequada (quedas e instabilidades frequentes)' ~ 3
+                                     dados$V33 == 'Não tem acesso à internet' ~ 1),
+                 Indicador = rowSums(across(c(V321cat_num,V325cat_num,V324cat_num,V323cat_num,V2537_V2567_V2564_V2565_cat_num,
+                                              V34_cat_num,V361_V364_num,V3711_V3712_V3713_V3714_V3715_V3716cat5_num,V374_cat5_num,
+                                              V103cat_num,v1065_v1064_v1065_v1066cat_num,v126_cat_num,V33_num)), na.rm = TRUE))
+
+
+
+########################
+
 
 QuiQuadrado_Fisher(dados$V7esf,dados$V321cat,'2','chisq.simulate')
 QuiQuadrado_Fisher(dados$V7eap,dados$V321cat,'2','chisq.simulate')
