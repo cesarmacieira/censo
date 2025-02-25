@@ -520,6 +520,9 @@ dados = dados %>% mutate(V2537_num = case_when(V2537 == 'Não' ~ 0,V2537 == 'Sim
 Tabela5 = QuiQuadrado_Fisher(dados$V2537_V2567_V2564_V2565,dados$V86cat,'2','chisq.simulate')
 #write.xlsx(DescritivaCat(dados$V2537_V2567_V2564_V2565_cat) %>% as.data.frame(), 'Tabela 5.xlsx', rowNames = T)
 
+####==========
+#### Tabela 6
+####==========
 dados = dados %>% mutate(
     V341_num = case_when(V341 == 'Não' ~ 0, V341 == 'Sim' ~ 2),
     V342_num = case_when(V342 == 'Não' ~ 0, V342 == 'Sim' ~ 1),
@@ -612,12 +615,24 @@ dados = dados %>% mutate(V911_num = case_when(V911 == 'Não' ~ 0,V911 == 'Sim' ~
 #write.xlsx(DescritivaCat(dados$V91cat) %>% as.data.frame(), 'Tabela 12.xlsx', rowNames = T)
 #write.xlsx(DescritivaCat(dados$V91_num_cat) %>% as.data.frame(), 'Tabela 12.1.xlsx', rowNames = T)
 
-dados = dados %>% mutate(V103cat = factor(case_when(v1036 == 'Sim' | V1034 == 'Sim' | v1035 == 'Sim' ~ 'Ótimo',
-                                                    V1033 == 'Sim' ~ 'Bom',
-                                                    V1032 == 'Sim' ~ 'Regular',
-                                                    v1037 == 'Sim' ~ 'Ruim',
-                                                    V1031 == 'Sim' ~ 'Péssimo'), c('Péssimo','Ruim','Regular','Bom','Ótimo')))
-#write.xlsx(DescritivaCat(dados$V103cat) %>% as.data.frame(), 'Tabela 13.xlsx', rowNames = T)
+####===========
+#### Tabela 13
+####===========
+dados = dados %>% mutate(V1031_num = case_when(V1031 == 'Não' ~ 0,V1031 == 'Sim' ~ 1),
+                         V1032_num = case_when(V1032 == 'Não' ~ 0,V1032 == 'Sim' ~ 1),
+                         V1033_num = case_when(V1033 == 'Não' ~ 0,V1033 == 'Sim' ~ 2),
+                         V1034_num = case_when(V1034 == 'Não' ~ 0,V1034 == 'Sim' ~ 2),
+                         V1035_num = case_when(v1035 == 'Não' ~ 0,v1035 == 'Sim' ~ 2),
+                         V1036_num = case_when(v1036 == 'Não' ~ 0,v1036 == 'Sim' ~ 2),
+                         V1037_num = case_when(v1037 == 'Não' ~ 0,v1037 == 'Sim' ~ 1), 
+                         V103_num = rowSums(across(c(V1031_num,V1032_num,V1033_num,V1034_num,V1035_num,V1036_num,V1037_num)), na.rm = TRUE),
+                         V103_num_imp = ifelse(is.na(V103_num) == TRUE, 0, V103_num),
+                         V103_num_cat = factor(case_when(V103_num_imp <= 1 ~ 'Péssimo',
+                                                         V103_num_imp >= 2 & V103_num_imp <= 3 ~ 'Ruim',
+                                                         V103_num_imp >= 4 & V103_num_imp <= 6 ~ 'Regular',
+                                                         V103_num_imp >= 7 & V103_num_imp <= 8 ~ 'Bom',
+                                                         V103_num_imp >= 9 ~ 'Ótimo'), levels = c('Péssimo', 'Ruim', 'Regular', 'Bom', 'Ótimo')))
+#write.xlsx(DescritivaCat(dados$V103_num_cat) %>% as.data.frame(), 'Tabela 13.xlsx', rowNames = T)
 
 dados = dados %>% mutate(v1063_num = case_when(v1063 == 'Não' ~ 0,v1063 == 'Sim' ~ 1),
                          v1064_num = case_when(v1064 == 'Não' ~ 0,v1064 == 'Sim' ~ 1),
@@ -631,13 +646,17 @@ dados$v1065_v1064_v1065_v1066cat =
                    dados$v1065_v1064_v1065_v1066 == 4 ~ 'Ótimo'), c('Péssimo/Ruim','Regular','Bom','Ótimo'))
 #write.xlsx(DescritivaCat(dados$v1065_v1064_v1065_v1066cat) %>% as.data.frame(), 'Tabela 14.xlsx', rowNames = T)
 
+####===========
+#### Tabela 15
+####===========
 DescritivaCat(dados$v120)
 DescritivaCat(dados$v1201)
 DescritivaCat(dados$v12026)
 
 dados$v12026_cat = ifelse(dados$v120 == 'Não', 'Não', dados$v12026)
+dados$v12026_cat_imp = ifelse(is.na(dados$v12026_cat) == TRUE, 'Não', dados$v12026_cat)
 #write.xlsx(DescritivaCat(dados$v12026) %>% as.data.frame(), 'Tabela 15.xlsx', rowNames = T)
-#write.xlsx(DescritivaCat(dados$v12026_cat) %>% as.data.frame(), 'Tabela 15.1.xlsx', rowNames = T)
+#write.xlsx(DescritivaCat(dados$v12026_cat_imp) %>% as.data.frame(), 'Tabela 15.1.xlsx', rowNames = T)
 
 dados = dados %>% mutate(v1263_num = case_when(v1263 == 'Não' ~ 0,v1263 == 'Sim' ~ 1),
                          v1264_num = case_when(v1264 == 'Não' ~ 0,v1264 == 'Sim' ~ 1),
@@ -690,12 +709,12 @@ dados = dados %>% mutate(V321cat_num = numerico(V321cat),
                                                    V374_cat5 == 'Bom' ~ 4,
                                                    V374_cat5 == 'Ótimo' ~ 5),
                          V91cat_num = numerico(V91_num_cat),
-                         V103cat_num = numerico(V103cat), 
+                         V103cat_num = numerico(V103_num_cat), 
                          v1065_v1064_v1065_v1066cat_num = case_when(v1065_v1064_v1065_v1066cat == 'Péssimo/Ruim' ~ 1,
                                                                     v1065_v1064_v1065_v1066cat == 'Regular' ~ 3,
                                                                     v1065_v1064_v1065_v1066cat == 'Bom' ~ 4,
                                                                     v1065_v1064_v1065_v1066cat == 'Ótimo' ~ 5),
-                         v12026_num =  case_when(v12026_cat == 'Não' ~ 1, v12026_cat == 'Sim' ~ 5),
+                         v12026_num =  case_when(v12026_cat_imp == 'Não' ~ 1, v12026_cat_imp == 'Sim' ~ 5),
                          v126_cat_num = numerico(v126_cat),
                          V33_num = case_when(V33 == 'Possui acesso à Internet adequado para a execução das atividades' ~ 5,
                                              V33 == 'Possui acesso à Internet, mas funciona de maneira inadequada (quedas e instabilidades frequentes)' ~ 3,
