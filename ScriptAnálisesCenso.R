@@ -430,12 +430,79 @@ dados$V321cat = factor(case_when( (dados$V7esf_eap <= 1) & (dados$V321 >= 0  & d
                            (dados$V7esf_eap == 5) & (dados$V321 >= 33) ~ 'Ótimo',
                            (dados$V7esf_eap == 6) & (dados$V321 >= 39) ~ 'Ótimo',
                            (dados$V7esf_eap >= 7) & (dados$V321 >= 45) ~ 'Ótimo'), c('Péssimo','Ruim','Regular','Bom','Ótimo'))
-dados %>% filter(V7esf_eap <= 1) %>% select(V321) %>% map(DescritivaCat)
-dados %>% filter(V7esf_eap <= 1) %>% select(V321cat) %>% map(DescritivaCat)
+
+# dados %>% filter(V7esf_eap <= 1) %>% select(V321) %>% map(DescritivaCat)
+# dados %>% filter(V7esf_eap <= 1) %>% select(V321cat) %>% map(DescritivaCat)
+# write.xlsx(dados %>% filter(V7esf_eap <= 1) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 0 ou 1 num.xlsx', rowNames = T)
+# write.xlsx(dados %>% filter(V7esf_eap <= 1) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 0 ou 1 cat.xlsx', rowNames = T)
+# 
+# dados %>% filter(V7esf_eap == 2) %>% select(V321) %>% map(DescritivaCat)
+# dados %>% filter(V7esf_eap == 2) %>% select(V321cat) %>% map(DescritivaCat)
+# write.xlsx(dados %>% filter(V7esf_eap == 2) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 2 num.xlsx', rowNames = T)
+# write.xlsx(dados %>% filter(V7esf_eap == 2) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 2 cat.xlsx', rowNames = T)
+# 
+# dados %>% filter(V7esf_eap == 3) %>% select(V321) %>% map(DescritivaCat)
+# dados %>% filter(V7esf_eap == 3) %>% select(V321cat) %>% map(DescritivaCat)
+# write.xlsx(dados %>% filter(V7esf_eap == 3) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 3 num.xlsx', rowNames = T)
+# write.xlsx(dados %>% filter(V7esf_eap == 3) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 3 cat.xlsx', rowNames = T)
+# 
+# dados %>% filter(V7esf_eap == 4) %>% select(V321) %>% map(DescritivaCat)
+# dados %>% filter(V7esf_eap == 4) %>% select(V321cat) %>% map(DescritivaCat)
+# write.xlsx(dados %>% filter(V7esf_eap == 4) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 4 num.xlsx', rowNames = T)
+# write.xlsx(dados %>% filter(V7esf_eap == 4) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 4 cat.xlsx', rowNames = T)
+# 
+# dados %>% filter(V7esf_eap == 5) %>% select(V321) %>% map(DescritivaCat)
+# dados %>% filter(V7esf_eap == 5) %>% select(V321cat) %>% map(DescritivaCat)
+# write.xlsx(dados %>% filter(V7esf_eap == 5) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 5 num.xlsx', rowNames = T)
+# write.xlsx(dados %>% filter(V7esf_eap == 5) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 5 cat.xlsx', rowNames = T)
+# 
+# dados %>% filter(V7esf_eap == 6) %>% select(V321) %>% map(DescritivaCat)
+# dados %>% filter(V7esf_eap == 6) %>% select(V321cat) %>% map(DescritivaCat)
+# write.xlsx(dados %>% filter(V7esf_eap == 6) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 6 num.xlsx', rowNames = T)
+# write.xlsx(dados %>% filter(V7esf_eap == 6) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 6 cat.xlsx', rowNames = T)
+# 
+# dados %>% filter(V7esf_eap >= 7) %>% select(V321) %>% map(DescritivaCat)
+# dados %>% filter(V7esf_eap >= 7) %>% select(V321cat) %>% map(DescritivaCat)
+# write.xlsx(dados %>% filter(V7esf_eap >= 7) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 7 num.xlsx', rowNames = T)
+# write.xlsx(dados %>% filter(V7esf_eap >= 7) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 7 cat.xlsx', rowNames = T)
+
+NumComp = rbind(dados %>% filter(V7esf_eap <= 1) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame() %>%
+                  mutate(QuantosCompFaltam = pmax(10 - as.numeric(rownames(.)), 0), ESF_EAP = "0 ou 1") %>%
+                  group_by(QuantosCompFaltam) %>% summarise(across(where(is.numeric), sum), ESF_EAP = first(ESF_EAP)) %>% ungroup() %>% as.data.frame(),
+                
+                dados %>% filter(V7esf_eap == 2) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame() %>%
+                  mutate(QuantosCompFaltam = pmax(15 - as.numeric(rownames(.)), 0), ESF_EAP = "2") %>%
+                  group_by(QuantosCompFaltam) %>% summarise(across(where(is.numeric), sum), ESF_EAP = first(ESF_EAP)) %>% ungroup() %>% as.data.frame(),
+                
+                dados %>% filter(V7esf_eap == 3) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame() %>%
+                  mutate(QuantosCompFaltam = pmax(21 - as.numeric(rownames(.)), 0), ESF_EAP = "3") %>%
+                  group_by(QuantosCompFaltam) %>% summarise(across(where(is.numeric), sum), ESF_EAP = first(ESF_EAP)) %>% ungroup() %>% as.data.frame(),
+                
+                dados %>% filter(V7esf_eap == 4) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame() %>%
+                  mutate(QuantosCompFaltam = pmax(27 - as.numeric(rownames(.)), 0), ESF_EAP = "4") %>%
+                  group_by(QuantosCompFaltam) %>% summarise(across(where(is.numeric), sum), ESF_EAP = first(ESF_EAP)) %>% ungroup() %>% as.data.frame(),
+                
+                dados %>% filter(V7esf_eap == 5) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame() %>%
+                  mutate(QuantosCompFaltam = pmax(33 - as.numeric(rownames(.)), 0), ESF_EAP = "5") %>%
+                  group_by(QuantosCompFaltam) %>% summarise(across(where(is.numeric), sum), ESF_EAP = first(ESF_EAP)) %>% ungroup() %>% as.data.frame(),
+                
+                dados %>% filter(V7esf_eap == 6) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame() %>%
+                  mutate(QuantosCompFaltam = pmax(39 - as.numeric(rownames(.)), 0), ESF_EAP = "6") %>%
+                  group_by(QuantosCompFaltam) %>% summarise(across(where(is.numeric), sum), ESF_EAP = first(ESF_EAP)) %>% ungroup() %>% as.data.frame(),
+                
+                dados %>% filter(V7esf_eap >= 7) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame() %>%
+                  mutate(QuantosCompFaltam = pmax(45 - as.numeric(rownames(.)), 0), ESF_EAP = "7 ou mais") %>%
+                  group_by(QuantosCompFaltam) %>% summarise(across(where(is.numeric), sum), ESF_EAP = first(ESF_EAP)) %>% ungroup() %>% as.data.frame())
+write.xlsx(NumComp, 'Computadores ESF EAP.xlsx', rowNames = T)
 
 Tabela1 = QuiQuadrado_Fisher(dados$V321cat,dados$V7esf_eap_cat,'2','chisq')
 #write.xlsx(Tabela1 %>% as.data.frame(), 'Tabela 1.xlsx', rowNames = T)
 
+DescritivaCat(dados$V321)
+
+####==========
+#### Tabela 2
+####==========
 dados$V325cat = case_when(dados$V325 == 0 ~ 'Ausente',
                           dados$V325 >= 1 ~ 'Presente')
 Tabela2 = QuiQuadrado_Fisher(dados$V325cat,dados$V7esf_eap_cat,'2','chisq')
@@ -446,6 +513,9 @@ dados$V324cat = case_when(dados$V324 == 0 ~ 'Ausente',
 Tabela3 = QuiQuadrado_Fisher(dados$V324cat,dados$V7esf_eap_cat,'2','chisq')
 #write.xlsx(DescritivaCat(dados$V324cat) %>% as.data.frame(), 'Tabela 3.xlsx', rowNames = T)
 
+####==========
+#### Tabela 4
+####==========
 dados$V86 = as.numeric(dados$V86)
 dados$V323 = as.numeric(dados$V323)
 dados$V86cat = factor(case_when(dados$V86 >= 0 & dados$V86 <= 3 ~ "0 a 3",
@@ -456,7 +526,6 @@ dados$V86cat = factor(case_when(dados$V86 >= 0 & dados$V86 <= 3 ~ "0 a 3",
                                 dados$V86 >= 20 & dados$V86 <= 23 ~ "20 a 23",
                                 dados$V86 >= 24 & dados$V86 <= 27 ~ "24 a 27",
                                 dados$V86 >= 28 ~ "28 ou mais"), c("0 a 3","4 a 7","8 a 11","12 a 15","16 a 19","20 a 23","24 a 27","28 ou mais"))
-
 
 dados$V323cat = factor(case_when( (dados$V86cat == "0 a 3") & (dados$V323 == 0) ~ 'Péssimo',
                                   (dados$V86cat == "4 a 7") & (dados$V323 == 0) ~ 'Péssimo',
@@ -504,6 +573,40 @@ dados$V323cat = factor(case_when( (dados$V86cat == "0 a 3") & (dados$V323 == 0) 
                                   (dados$V86cat == "28 ou mais") & (dados$V323 >= 25) ~ 'Ótimo'), c('Péssimo','Ruim','Regular','Bom','Ótimo'))
 Tabela4 = QuiQuadrado_Fisher(dados$V323cat,dados$V86cat,'2','chisq.simulate')
 #write.xlsx(Tabela4 %>% as.data.frame(), 'Tabela 4.xlsx', rowNames = T)
+dados %>% filter(V7esf_eap <= 1) %>% select(V321) %>% map(DescritivaCat)
+dados %>% filter(V7esf_eap <= 1) %>% select(V321cat) %>% map(DescritivaCat)
+write.xlsx(dados %>% filter(V7esf_eap <= 1) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 0 ou 1 num.xlsx', rowNames = T)
+write.xlsx(dados %>% filter(V7esf_eap <= 1) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 0 ou 1 cat.xlsx', rowNames = T)
+
+dados %>% filter(V7esf_eap == 2) %>% select(V321) %>% map(DescritivaCat)
+dados %>% filter(V7esf_eap == 2) %>% select(V321cat) %>% map(DescritivaCat)
+write.xlsx(dados %>% filter(V7esf_eap == 2) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 2 num.xlsx', rowNames = T)
+write.xlsx(dados %>% filter(V7esf_eap == 2) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 2 cat.xlsx', rowNames = T)
+
+dados %>% filter(V7esf_eap == 3) %>% select(V321) %>% map(DescritivaCat)
+dados %>% filter(V7esf_eap == 3) %>% select(V321cat) %>% map(DescritivaCat)
+write.xlsx(dados %>% filter(V7esf_eap == 3) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 3 num.xlsx', rowNames = T)
+write.xlsx(dados %>% filter(V7esf_eap == 3) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 3 cat.xlsx', rowNames = T)
+
+dados %>% filter(V7esf_eap == 4) %>% select(V321) %>% map(DescritivaCat)
+dados %>% filter(V7esf_eap == 4) %>% select(V321cat) %>% map(DescritivaCat)
+write.xlsx(dados %>% filter(V7esf_eap == 4) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 4 num.xlsx', rowNames = T)
+write.xlsx(dados %>% filter(V7esf_eap == 4) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 4 cat.xlsx', rowNames = T)
+
+dados %>% filter(V7esf_eap == 5) %>% select(V321) %>% map(DescritivaCat)
+dados %>% filter(V7esf_eap == 5) %>% select(V321cat) %>% map(DescritivaCat)
+write.xlsx(dados %>% filter(V7esf_eap == 5) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 5 num.xlsx', rowNames = T)
+write.xlsx(dados %>% filter(V7esf_eap == 5) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 5 cat.xlsx', rowNames = T)
+
+dados %>% filter(V7esf_eap == 6) %>% select(V321) %>% map(DescritivaCat)
+dados %>% filter(V7esf_eap == 6) %>% select(V321cat) %>% map(DescritivaCat)
+write.xlsx(dados %>% filter(V7esf_eap == 6) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 6 num.xlsx', rowNames = T)
+write.xlsx(dados %>% filter(V7esf_eap == 6) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 6 cat.xlsx', rowNames = T)
+
+dados %>% filter(V7esf_eap >= 7) %>% select(V321) %>% map(DescritivaCat)
+dados %>% filter(V7esf_eap >= 7) %>% select(V321cat) %>% map(DescritivaCat)
+write.xlsx(dados %>% filter(V7esf_eap >= 7) %>% select(V321) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 7 num.xlsx', rowNames = T)
+write.xlsx(dados %>% filter(V7esf_eap >= 7) %>% select(V321cat) %>% map(DescritivaCat) %>% as.data.frame(), 'Computadores ESF EAP 7 cat.xlsx', rowNames = T)
 
 
 dados = dados %>% mutate(V2537_num = case_when(V2537 == 'Não' ~ 0,V2537 == 'Sim' ~ 1),
