@@ -738,29 +738,63 @@ Tabela3 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V347,'2','chisq'),
 # (22-as.numeric(rownames(AC_7)))*AC_7$V323.Freq..Absoluta..N.
 # (25-as.numeric(rownames(AC_8)))*AC_8$V323.Freq..Absoluta..N.
 
-dados %>% mutate(meta = case_when(
-  V86cat == '0 a 3' ~ 4,
-  V86cat == '4 a 7' ~ 4,
-  V86cat == '8 a 11' ~ 8,
-  V86cat == '12 a 15' ~ 11,
-  V86cat == '16 a 19' ~ 15,
-  V86cat == '20 a 23' ~ 19,
-  V86cat == '24 a 27' ~ 22,
-  V86cat == '28 ou mais' ~ 25,
-  TRUE ~ NA_real_),
-  faltam_tablets = pmax(meta - V323, 0)) %>% group_by(V17) %>%
+Tabela4.1 = dados %>% mutate(meta_tablets = case_when(V86cat == '0 a 3' ~ 4,
+                                                      V86cat == '4 a 7' ~ 4,
+                                                      V86cat == '8 a 11' ~ 8,
+                                                      V86cat == '12 a 15' ~ 11,
+                                                      V86cat == '16 a 19' ~ 15,
+                                                      V86cat == '20 a 23' ~ 19,
+                                                      V86cat == '24 a 27' ~ 22,
+                                                      V86cat == '28 ou mais' ~ 25,
+                                                      TRUE ~ NA_real_),
+  faltam_tablets = pmax(meta_tablets - V323, 0)) %>% 
+  group_by(V17) %>%
   summarise(Total_faltam_tablets = sum(faltam_tablets, na.rm = TRUE))
+#write.xlsx(Tabela4.1 %>% as.data.frame(), 'Tabela 4.1.xlsx', rowNames = T)
 
-QuiQuadrado_Fisher(dados$V17,dados$V323,'2','chisq.simulate')
+dadosesf_eap_1 = dados %>% filter(V7esf_eap <= 1)
+dadosesf_eap_2 = dados %>% filter(V7esf_eap == 2)
+dadosesf_eap_3 = dados %>% filter(V7esf_eap == 3)
+dadosesf_eap_4 = dados %>% filter(V7esf_eap == 4)
+dadosesf_eap_5 = dados %>% filter(V7esf_eap == 5)
+dadosesf_eap_6 = dados %>% filter(V7esf_eap == 6)
+dadosesf_eap_7 = dados %>% filter(V7esf_eap >= 7)
 
+DescritivaCat(dadosesf_eap_1$V321)
 
+esf_eap_AC_1 = dadosesf_eap_1 %>% select(V17, V323) %>% filter(V17 == 'AC') %>% select(V323) %>% map(DescritivaCat) %>% as.data.frame()
+esf_eap_AC_2 = dadosesf_eap_2 %>% select(V17, V323) %>% filter(V17 == 'AC') %>% select(V323) %>% map(DescritivaCat) %>% as.data.frame()
+esf_eap_AC_3 = dadosesf_eap_3 %>% select(V17, V323) %>% filter(V17 == 'AC') %>% select(V323) %>% map(DescritivaCat) %>% as.data.frame()
+esf_eap_AC_4 = dadosesf_eap_4 %>% select(V17, V323) %>% filter(V17 == 'AC') %>% select(V323) %>% map(DescritivaCat) %>% as.data.frame()
+esf_eap_AC_5 = dadosesf_eap_5 %>% select(V17, V323) %>% filter(V17 == 'AC') %>% select(V323) %>% map(DescritivaCat) %>% as.data.frame()
+esf_eap_AC_6 = dadosesf_eap_6 %>% select(V17, V323) %>% filter(V17 == 'AC') %>% select(V323) %>% map(DescritivaCat) %>% as.data.frame()
+esf_eap_AC_7 = dadosesf_eap_7 %>% select(V17, V323) %>% filter(V17 == 'AC') %>% select(V323) %>% map(DescritivaCat) %>% as.data.frame()
 
-Tabela4.2 = dados %>% select(V17, V323, V321) %>% group_by(V17) %>%
+(10-as.numeric(rownames(esf_eap_AC_1)))*esf_eap_AC_1$V323.Freq..Absoluta..N.
+(15-as.numeric(rownames(esf_eap_AC_2)))*esf_eap_AC_2$V323.Freq..Absoluta..N.
+(21-as.numeric(rownames(esf_eap_AC_3)))*esf_eap_AC_3$V323.Freq..Absoluta..N.
+(27-as.numeric(rownames(esf_eap_AC_4)))*esf_eap_AC_4$V323.Freq..Absoluta..N.
+(33-as.numeric(rownames(esf_eap_AC_5)))*esf_eap_AC_5$V323.Freq..Absoluta..N.
+(39-as.numeric(rownames(esf_eap_AC_6)))*esf_eap_AC_6$V323.Freq..Absoluta..N.
+(45-as.numeric(rownames(esf_eap_AC_7)))*esf_eap_AC_7$V323.Freq..Absoluta..N.
+
+Tabela4.2 = dados %>% mutate(meta_comp = case_when(V7esf_eap <= 1 ~ 10,
+                                                   V7esf_eap == 2 ~ 15,
+                                                   V7esf_eap == 3 ~ 21,
+                                                   V7esf_eap == 4 ~ 27,
+                                                   V7esf_eap == 5 ~ 33,
+                                                   V7esf_eap == 6 ~ 39,
+                                                   V7esf_eap >= 7 ~ 45,
+                                                   TRUE ~ NA_real_),
+                             faltam_comp = pmax(meta_comp - V321, 0)) %>% 
+  group_by(V17) %>%
+  summarise(Total_faltam_comp = sum(faltam_comp, na.rm = TRUE))
+write.xlsx(Tabela4.2 %>% as.data.frame(), 'Tabela 4.2.xlsx', rowNames = T)
+
+Tabela4.3 = dados %>% select(V17, V323, V321) %>% group_by(V17) %>%
   summarise(Soma_Tablets = sum(V323, na.rm = TRUE),
             Soma_Comp = sum(V321, na.rm = TRUE))
 #write.xlsx(Tabela4.2 %>% as.data.frame(), 'Tabela 4.2.xlsx', rowNames = T)
-#
-#
 
 #Espirômetro digital
 #Retinógrafo digital
