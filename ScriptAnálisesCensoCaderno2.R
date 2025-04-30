@@ -693,14 +693,14 @@ Tabela2 = QuiQuadrado_Fisher(dados$V17,dados$V34_num_cat,'2','chisq')
 #Farmácia
 #Alguns consultórios
 #Todos os consultórios
-Tabela3 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V347,'2','chisq'),
-                QuiQuadrado_Fisher(dados$V17,dados$V346,'2','chisq'),
-                QuiQuadrado_Fisher(dados$V17,dados$V345,'2','chisq'),
-                QuiQuadrado_Fisher(dados$V17,dados$V344,'2','chisq'),
-                QuiQuadrado_Fisher(dados$V17,dados$V343,'2','chisq'),
-                QuiQuadrado_Fisher(dados$V17,dados$V342,'2','chisq'),
-                QuiQuadrado_Fisher(dados$V17,dados$V341,'2','chisq'))
-#write.xlsx(Tabela3 %>% as.data.frame(), 'Tabela 3.xlsx', rowNames = T)
+Tabela3 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V347,'1','chisq'),
+                QuiQuadrado_Fisher(dados$V17,dados$V346,'1','chisq'),
+                QuiQuadrado_Fisher(dados$V17,dados$V345,'1','chisq'),
+                QuiQuadrado_Fisher(dados$V17,dados$V344,'1','chisq'),
+                QuiQuadrado_Fisher(dados$V17,dados$V343,'1','chisq'),
+                QuiQuadrado_Fisher(dados$V17,dados$V342,'1','chisq'),
+                QuiQuadrado_Fisher(dados$V17,dados$V341,'1','chisq'))
+write.xlsx(Tabela3 %>% as.data.frame(), 'Tabela 3.xlsx', rowNames = T)
 
 #Tablets
 #Nº computadores
@@ -789,7 +789,7 @@ Tabela4.2 = dados %>% mutate(meta_comp = case_when(V7esf_eap <= 1 ~ 10,
                              faltam_comp = pmax(meta_comp - V321, 0)) %>% 
   group_by(V17) %>%
   summarise(Total_faltam_comp = sum(faltam_comp, na.rm = TRUE))
-write.xlsx(Tabela4.2 %>% as.data.frame(), 'Tabela 4.2.xlsx', rowNames = T)
+#write.xlsx(Tabela4.2 %>% as.data.frame(), 'Tabela 4.2.xlsx', rowNames = T)
 
 Tabela4.3 = dados %>% select(V17, V323, V321) %>% group_by(V17) %>%
   summarise(Soma_Tablets = sum(V323, na.rm = TRUE),
@@ -802,7 +802,7 @@ Tabela4.3 = dados %>% select(V17, V323, V321) %>% group_by(V17) %>%
 Tabela5 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V2565,'2','chisq.simulate'),
                 QuiQuadrado_Fisher(dados$V17,dados$V2564,'2','chisq.simulate'),
                 QuiQuadrado_Fisher(dados$V17,dados$V2537_V2567_num,'2','chisq.simulate'))
-write.xlsx(Tabela5 %>% as.data.frame(), 'Tabela 5.xlsx', rowNames = T)
+#write.xlsx(Tabela5 %>% as.data.frame(), 'Tabela 5.xlsx', rowNames = T)
 
 #UBS que utilizam telessaúde
 #UBS que utilizam prontuário eletrônico
