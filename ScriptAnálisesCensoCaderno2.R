@@ -673,6 +673,9 @@ dados = dados %>% mutate(V321cat_num = numerico(V321cat),
                          )
 )
 
+dados$V323_bin = ifelse(dados$V323 > 0, 1, dados$V323)
+dados$V321_bin = ifelse(dados$V321 > 0, 1, dados$V321)
+
 ####==========
 #### Análises
 ####==========
@@ -700,7 +703,7 @@ Tabela3 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V347,'1','chisq'),
                 QuiQuadrado_Fisher(dados$V17,dados$V343,'1','chisq'),
                 QuiQuadrado_Fisher(dados$V17,dados$V342,'1','chisq'),
                 QuiQuadrado_Fisher(dados$V17,dados$V341,'1','chisq'))
-write.xlsx(Tabela3 %>% as.data.frame(), 'Tabela 3.xlsx', rowNames = T)
+#write.xlsx(Tabela3 %>% as.data.frame(), 'Tabela 3.xlsx', rowNames = T)
 
 #Tablets
 #Nº computadores
@@ -760,8 +763,6 @@ dadosesf_eap_5 = dados %>% filter(V7esf_eap == 5)
 dadosesf_eap_6 = dados %>% filter(V7esf_eap == 6)
 dadosesf_eap_7 = dados %>% filter(V7esf_eap >= 7)
 
-DescritivaCat(dadosesf_eap_1$V321)
-
 esf_eap_AC_1 = dadosesf_eap_1 %>% select(V17, V323) %>% filter(V17 == 'AC') %>% select(V323) %>% map(DescritivaCat) %>% as.data.frame()
 esf_eap_AC_2 = dadosesf_eap_2 %>% select(V17, V323) %>% filter(V17 == 'AC') %>% select(V323) %>% map(DescritivaCat) %>% as.data.frame()
 esf_eap_AC_3 = dadosesf_eap_3 %>% select(V17, V323) %>% filter(V17 == 'AC') %>% select(V323) %>% map(DescritivaCat) %>% as.data.frame()
@@ -794,36 +795,40 @@ Tabela4.2 = dados %>% mutate(meta_comp = case_when(V7esf_eap <= 1 ~ 10,
 Tabela4.3 = dados %>% select(V17, V323, V321) %>% group_by(V17) %>%
   summarise(Soma_Tablets = sum(V323, na.rm = TRUE),
             Soma_Comp = sum(V321, na.rm = TRUE))
-#write.xlsx(Tabela4.2 %>% as.data.frame(), 'Tabela 4.2.xlsx', rowNames = T)
+#write.xlsx(Tabela4.3 %>% as.data.frame(), 'Tabela 4.3.xlsx', rowNames = T)
+
+Tabela4.4 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V323_bin,'1','chisq.simulate'),
+                  QuiQuadrado_Fisher(dados$V17,dados$V321_bin,'1','chisq.simulate'))
+#write.xlsx(Tabela4.4 %>% as.data.frame(), 'Tabela 4.4.xlsx', rowNames = T)
 
 #Espirômetro digital
 #Retinógrafo digital
 #ECG digital ou Eletrocardiógrafo digital
-Tabela5 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V2565,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V2564,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V2537_V2567_num,'2','chisq.simulate'))
+Tabela5 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V2565,'1','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V2564,'1','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V2537_V2567_num,'1','chisq.simulate'))
 #write.xlsx(Tabela5 %>% as.data.frame(), 'Tabela 5.xlsx', rowNames = T)
 
 #UBS que utilizam telessaúde
 #UBS que utilizam prontuário eletrônico
-Tabela6 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V3612,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V37,'2','chisq.simulate'))
-write.xlsx(Tabela6 %>% as.data.frame(), 'Tabela 6.xlsx', rowNames = T)
+Tabela6 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V3612,'1','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V37,'1','chisq.simulate'))
+#write.xlsx(Tabela6 %>% as.data.frame(), 'Tabela 6.xlsx', rowNames = T)
 
 #Agendamento de consulta
-Tabela7 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V1031,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V1032,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V1033,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V1034,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V1035,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V1036,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V1037,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$v1038,'2','chisq.simulate'))
-write.xlsx(Tabela7 %>% as.data.frame(), 'Tabela 7.xlsx', rowNames = T)
+Tabela7 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V1031,'1','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V1032,'1','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V1033,'1','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V1034,'1','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V1035,'1','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V1036,'1','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V1037,'1','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$v1038,'1','chisq.simulate'))
+#write.xlsx(Tabela7 %>% as.data.frame(), 'Tabela 7.xlsx', rowNames = T)
 
 #Indicador
 Tabela8 = QuiQuadrado_Fisher(dados$V17,dados$Indicador_cat,'2','chisq.simulate')
-write.xlsx(Tabela8 %>% as.data.frame(), 'Tabela 8.xlsx', rowNames = T)
+#write.xlsx(Tabela8 %>% as.data.frame(), 'Tabela 8.xlsx', rowNames = T)
 
 #Distribuição de tablets por faixa de ACS
 DescritivaCat(dados$V323cat)
