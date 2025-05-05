@@ -811,6 +811,7 @@ Tabela5 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V2565,'1','chisq.simulate'),
 
 #UBS que utilizam telessaúde
 #UBS que utilizam prontuário eletrônico
+DescritivaCat(dados$V37)
 Tabela6 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V3612,'1','chisq.simulate'),
                 QuiQuadrado_Fisher(dados$V17,dados$V37,'1','chisq.simulate'))
 #write.xlsx(Tabela6 %>% as.data.frame(), 'Tabela 6.xlsx', rowNames = T)
