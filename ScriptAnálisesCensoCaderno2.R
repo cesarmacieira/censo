@@ -801,6 +801,13 @@ Tabela4.4 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V323_bin,'1','chisq.simulat
                   QuiQuadrado_Fisher(dados$V17,dados$V321_bin,'1','chisq.simulate'))
 #write.xlsx(Tabela4.4 %>% as.data.frame(), 'Tabela 4.4.xlsx', rowNames = T)
 
+dados$V321_4cat = case_when(dados$V321 == 0 ~ "0",
+                            dados$V321 == 1 ~ "1",
+                            dados$V321 >= 2 & dados$V321 <= 4 ~ "2 a 4",
+                            dados$V321 > 4 ~ "Mais que 4")
+DescritivaCat(dados$V321_4cat)
+#write.xlsx(DescritivaCat(dados$V321_4cat) %>% as.data.frame(), 'Tabela 4 comparação PMAQ.xlsx', rowNames = T)
+
 #Espirômetro digital
 #Retinógrafo digital
 #ECG digital ou Eletrocardiógrafo digital
