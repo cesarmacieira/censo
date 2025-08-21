@@ -858,27 +858,101 @@ Tabela10.6 = QuiQuadrado_Fisher(dadosACS_20a23$V17,dadosACS_20a23$V323cat,'2','c
 Tabela10.7 = QuiQuadrado_Fisher(dadosACS_24a27$V17,dadosACS_24a27$V323cat,'2','chisq.simulate')
 Tabela10.8 = QuiQuadrado_Fisher(dadosACS_28oumais$V17,dadosACS_28oumais$V323cat,'2','chisq.simulate')
 
-write.xlsx(Tabela10.1 %>% as.data.frame(), 'Tabela 10.1.xlsx', rowNames = T)
-write.xlsx(Tabela10.2 %>% as.data.frame(), 'Tabela 10.2.xlsx', rowNames = T)
-write.xlsx(Tabela10.3 %>% as.data.frame(), 'Tabela 10.3.xlsx', rowNames = T)
-write.xlsx(Tabela10.4 %>% as.data.frame(), 'Tabela 10.4.xlsx', rowNames = T)
-write.xlsx(Tabela10.5 %>% as.data.frame(), 'Tabela 10.5.xlsx', rowNames = T)
-write.xlsx(Tabela10.6 %>% as.data.frame(), 'Tabela 10.6.xlsx', rowNames = T)
-write.xlsx(Tabela10.7 %>% as.data.frame(), 'Tabela 10.7.xlsx', rowNames = T)
-write.xlsx(Tabela10.8 %>% as.data.frame(), 'Tabela 10.8.xlsx', rowNames = T)
-
-
+# write.xlsx(Tabela10.1 %>% as.data.frame(), 'Tabela 10.1.xlsx', rowNames = T)
+# write.xlsx(Tabela10.2 %>% as.data.frame(), 'Tabela 10.2.xlsx', rowNames = T)
+# write.xlsx(Tabela10.3 %>% as.data.frame(), 'Tabela 10.3.xlsx', rowNames = T)
+# write.xlsx(Tabela10.4 %>% as.data.frame(), 'Tabela 10.4.xlsx', rowNames = T)
+# write.xlsx(Tabela10.5 %>% as.data.frame(), 'Tabela 10.5.xlsx', rowNames = T)
+# write.xlsx(Tabela10.6 %>% as.data.frame(), 'Tabela 10.6.xlsx', rowNames = T)
+# write.xlsx(Tabela10.7 %>% as.data.frame(), 'Tabela 10.7.xlsx', rowNames = T)
+# write.xlsx(Tabela10.8 %>% as.data.frame(), 'Tabela 10.8.xlsx', rowNames = T)
 
 #UBS que utilizam telessaúde
 DescritivaCat(dados$V2537_V2567_V2564_V2565_cat)
 DescritivaCat(dados$V2537_V2567_V2564_V2565_cat)
 Tabela14 = QuiQuadrado_Fisher(dados$V17,dados$V2537_V2567_V2564_V2565_cat,'2','chisq.simulate')
-write.xlsx(Tabela14 %>% as.data.frame(), 'Tabela 14.xlsx', rowNames = T)
+#write.xlsx(Tabela14 %>% as.data.frame(), 'Tabela 14.xlsx', rowNames = T)
 
 #UBS que utilizam prontuário eletrônico
 Tabela15 = QuiQuadrado_Fisher(dados$V17,dados$V37,'2','chisq.simulate')
-write.xlsx(Tabela15 %>% as.data.frame(), 'Tabela 15.xlsx', rowNames = T)
+#write.xlsx(Tabela15 %>% as.data.frame(), 'Tabela 15.xlsx', rowNames = T)
 
+####=====================
+#### Análises 21-08-2025
+####=====================
+Tabela1 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V351,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V352,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V353,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V354,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V355,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V356,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V357,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V358,'2','chisq.simulate'))
+#write.xlsx(Tabela1 %>% as.data.frame(), 'Tabela 1.xlsx', rowNames = T)
+
+Tabela2 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V361,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V362,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V363,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V364,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V365,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V366,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V367,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V368,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V369,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3610,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3611,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3612,'2','chisq.simulate'))
+#write.xlsx(Tabela2 %>% as.data.frame(), 'Tabela 2.xlsx', rowNames = T)
+
+Tabela3 = cbind(QuiQuadrado_Fisher(dados$V17,dados$v304,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$v305,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3613,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3614,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3615,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3616,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3617,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3618,'2','chisq.simulate'))
+#write.xlsx(Tabela3 %>% as.data.frame(), 'Tabela 3.xlsx', rowNames = T)
+
+Tabela4 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V3621,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3622,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3623,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3624,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3625,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3626,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3627,'2','chisq.simulate'))
+#write.xlsx(Tabela4 %>% as.data.frame(), 'Tabela 4.xlsx', rowNames = T)
+
+Tabela5 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V37,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3711,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3712,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3713,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3714,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3715,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3716,'2','chisq.simulate'))
+#write.xlsx(Tabela5 %>% as.data.frame(), 'Tabela 5.xlsx', rowNames = T)
+
+Tabela6 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V372,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V373,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3741,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3742,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3743,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3744,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3745,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3746,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3747,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3748,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V3749,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V37410,'2','chisq.simulate'),
+                QuiQuadrado_Fisher(dados$V17,dados$V37411,'2','chisq.simulate'))
+#write.xlsx(Tabela6 %>% as.data.frame(), 'Tabela 6.xlsx', rowNames = T)
+
+DescritivaCat(dados$V325cat_num)
+QuiQuadrado_Fisher(dados$V17,dados$V325,'2','chisq.simulate')
+QuiQuadrado_Fisher(dados$V17,dados$V325cat,'2','chisq.simulate')
+DescritivaCat(dados$V372)
+
+[15:53, 21/08/2025] Laine: V325
 ##########################
 ###########################
 DescritivaCat(dadosACS_0a3$V323)
