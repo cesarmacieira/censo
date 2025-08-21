@@ -947,12 +947,8 @@ Tabela6 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V372,'2','chisq.simulate'),
                 QuiQuadrado_Fisher(dados$V17,dados$V37411,'2','chisq.simulate'))
 #write.xlsx(Tabela6 %>% as.data.frame(), 'Tabela 6.xlsx', rowNames = T)
 
-DescritivaCat(dados$V325cat_num)
-QuiQuadrado_Fisher(dados$V17,dados$V325,'2','chisq.simulate')
-QuiQuadrado_Fisher(dados$V17,dados$V325cat,'2','chisq.simulate')
-DescritivaCat(dados$V372)
+#write.xlsx(QuiQuadrado_Fisher(dados$V325,dados$V17,'2','chisq.simulate') %>% as.data.frame(), 'Tabela 7.xlsx', rowNames = T)
 
-[15:53, 21/08/2025] Laine: V325
 ##########################
 ###########################
 DescritivaCat(dadosACS_0a3$V323)
