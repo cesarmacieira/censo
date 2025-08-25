@@ -81,6 +81,21 @@ basic.stats = function(x, more = F) {
   t1
 }
 
+TabelaContingencia = function(x, y, type.sum){
+  t0 = table(x, y)
+  if(type.sum==2) {
+    t1 = prop.table(t0, 2)
+  } else {
+    t1 = prop.table(t0, 1)
+  }
+  colnames(t0) = paste0("X", 1:dim(t0)[2])
+  colnames(t1) = paste0("X", 1:dim(t1)[2])
+  t2_aux = cbind(t0, t1)
+  t3 = t2_aux[, order(colnames(t2_aux))]
+  colnames(t3) = c(rep(c("N", "%"), dim(t3)[2]/2))
+  return(t3)
+}
+
 QuiQuadrado_Fisher = function(x, y, type.sum, teste){
   t0 = table(x, y)
   if(type.sum==2) {
@@ -880,74 +895,74 @@ Tabela15 = QuiQuadrado_Fisher(dados$V17,dados$V37,'2','chisq.simulate')
 ####=====================
 #### Análises 21-08-2025
 ####=====================
-Tabela1 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V351,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V352,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V353,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V354,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V355,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V356,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V357,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V358,'2','chisq.simulate'))
+Tabela1 = cbind(TabelaContingencia(dados$V17,dados$V351,'1'),
+                TabelaContingencia(dados$V17,dados$V352,'1'),
+                TabelaContingencia(dados$V17,dados$V353,'1'),
+                TabelaContingencia(dados$V17,dados$V354,'1'),
+                TabelaContingencia(dados$V17,dados$V355,'1'),
+                TabelaContingencia(dados$V17,dados$V356,'1'),
+                TabelaContingencia(dados$V17,dados$V357,'1'),
+                TabelaContingencia(dados$V17,dados$V358,'1'))
 #write.xlsx(Tabela1 %>% as.data.frame(), 'Tabela 1.xlsx', rowNames = T)
 
-Tabela2 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V361,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V362,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V363,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V364,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V365,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V366,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V367,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V368,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V369,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3610,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3611,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3612,'2','chisq.simulate'))
+Tabela2 = cbind(TabelaContingencia(dados$V17,dados$V361,'1'),
+                TabelaContingencia(dados$V17,dados$V362,'1'),
+                TabelaContingencia(dados$V17,dados$V363,'1'),
+                TabelaContingencia(dados$V17,dados$V364,'1'),
+                TabelaContingencia(dados$V17,dados$V365,'1'),
+                TabelaContingencia(dados$V17,dados$V366,'1'),
+                TabelaContingencia(dados$V17,dados$V367,'1'),
+                TabelaContingencia(dados$V17,dados$V368,'1'),
+                TabelaContingencia(dados$V17,dados$V369,'1'),
+                TabelaContingencia(dados$V17,dados$V3610,'1'),
+                TabelaContingencia(dados$V17,dados$V3611,'1'),
+                TabelaContingencia(dados$V17,dados$V3612,'1'))
 #write.xlsx(Tabela2 %>% as.data.frame(), 'Tabela 2.xlsx', rowNames = T)
 
-Tabela3 = cbind(QuiQuadrado_Fisher(dados$V17,dados$v304,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$v305,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3613,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3614,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3615,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3616,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3617,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3618,'2','chisq.simulate'))
+Tabela3 = cbind(TabelaContingencia(dados$V17,dados$v304,'1'),
+                TabelaContingencia(dados$V17,dados$v305,'1'),
+                TabelaContingencia(dados$V17,dados$V3613,'1'),
+                TabelaContingencia(dados$V17,dados$V3614,'1'),
+                TabelaContingencia(dados$V17,dados$V3615,'1'),
+                TabelaContingencia(dados$V17,dados$V3616,'1'),
+                TabelaContingencia(dados$V17,dados$V3617,'1'),
+                TabelaContingencia(dados$V17,dados$V3618,'1'))
 #write.xlsx(Tabela3 %>% as.data.frame(), 'Tabela 3.xlsx', rowNames = T)
 
-Tabela4 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V3621,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3622,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3623,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3624,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3625,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3626,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3627,'2','chisq.simulate'))
+Tabela4 = cbind(TabelaContingencia(dados$V17,dados$V3621,'1'),
+                TabelaContingencia(dados$V17,dados$V3622,'1'),
+                TabelaContingencia(dados$V17,dados$V3623,'1'),
+                TabelaContingencia(dados$V17,dados$V3624,'1'),
+                TabelaContingencia(dados$V17,dados$V3625,'1'),
+                TabelaContingencia(dados$V17,dados$V3626,'1'),
+                TabelaContingencia(dados$V17,dados$V3627,'1'))
 #write.xlsx(Tabela4 %>% as.data.frame(), 'Tabela 4.xlsx', rowNames = T)
 
-Tabela5 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V37,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3711,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3712,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3713,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3714,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3715,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3716,'2','chisq.simulate'))
+Tabela5 = cbind(TabelaContingencia(dados$V17,dados$V37,'1'),
+                TabelaContingencia(dados$V17,dados$V3711,'1'),
+                TabelaContingencia(dados$V17,dados$V3712,'1'),
+                TabelaContingencia(dados$V17,dados$V3713,'1'),
+                TabelaContingencia(dados$V17,dados$V3714,'1'),
+                TabelaContingencia(dados$V17,dados$V3715,'1'),
+                TabelaContingencia(dados$V17,dados$V3716,'1'))
 #write.xlsx(Tabela5 %>% as.data.frame(), 'Tabela 5.xlsx', rowNames = T)
 
-Tabela6 = cbind(QuiQuadrado_Fisher(dados$V17,dados$V372,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V373,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3741,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3742,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3743,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3744,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3745,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3746,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3747,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3748,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V3749,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V37410,'2','chisq.simulate'),
-                QuiQuadrado_Fisher(dados$V17,dados$V37411,'2','chisq.simulate'))
+Tabela6 = cbind(TabelaContingencia(dados$V17,dados$V372,'1'),
+                TabelaContingencia(dados$V17,dados$V373,'1'),
+                TabelaContingencia(dados$V17,dados$V3741,'1'),
+                TabelaContingencia(dados$V17,dados$V3742,'1'),
+                TabelaContingencia(dados$V17,dados$V3743,'1'),
+                TabelaContingencia(dados$V17,dados$V3744,'1'),
+                TabelaContingencia(dados$V17,dados$V3745,'1'),
+                TabelaContingencia(dados$V17,dados$V3746,'1'),
+                TabelaContingencia(dados$V17,dados$V3747,'1'),
+                TabelaContingencia(dados$V17,dados$V3748,'1'),
+                TabelaContingencia(dados$V17,dados$V3749,'1'),
+                TabelaContingencia(dados$V17,dados$V37410,'1'),
+                TabelaContingencia(dados$V17,dados$V37411,'1'))
 #write.xlsx(Tabela6 %>% as.data.frame(), 'Tabela 6.xlsx', rowNames = T)
 
-#write.xlsx(QuiQuadrado_Fisher(dados$V325,dados$V17,'2','chisq.simulate') %>% as.data.frame(), 'Tabela 7.xlsx', rowNames = T)
+#write.xlsx(TabelaContingencia(dados$V325,dados$V17,'1') %>% as.data.frame(), 'Tabela 7.xlsx', rowNames = T)
 
 ##########################
 ###########################
