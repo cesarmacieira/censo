@@ -333,6 +333,7 @@ gini = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/cens
 ####=====================
 #### Tratamento de dados
 ####=====================
+dados_originais = dados_originais %>% rename(ivs_censo = ivs)
 df = as.data.frame(lapply(dados_originais, function(col) { 
   attributes(col) <- NULL 
   return(col)}), stringsAsFactors = FALSE)
@@ -665,12 +666,15 @@ criar_indicador = function(df, variaveis, nome_indicador) {
   df %>% mutate(!!nome_indicador := rowSums(across(any_of(alvo_num)), na.rm=TRUE))
 }
 
+df2$porte_populacional = factor(df2$porte_populacional,
+                                c("Pequeno Porte I","Pequeno Porte II","Médio Porte","Grande Porte","Metrópole"))
+
 ####===============================
 #### Junção com dados demográficos
 ####===============================
 leitos_pop = left_join(leitos %>% rename(NLeitos = Quantidade.existente), 
                        populacao %>% select('COD-6D',POPULAÇÃO.ESTIMADA), by = c("COD-6D"="COD-6D")) %>% 
-  mutate(PercLeitos = NLeitos/POPULAÇÃO.ESTIMADA)
+  mutate(PercLeitos = (NLeitos/POPULAÇÃO.ESTIMADA)*100000)
 
 planos_saude_pop = left_join(planos_saude, 
                              populacao %>% select('COD-6D',POPULAÇÃO.ESTIMADA), by = c("IBGE"="COD-6D")) %>% 
@@ -684,7 +688,7 @@ df3 = left_join(df2, populacao %>% select('COD-6D',POPULAÇÃO.ESTIMADA), by = c
 df4 = left_join(df3, leitos_pop %>% select(PercLeitos,"COD-6D"), by = c("CO_MUNICIPIO_IBGE"="COD-6D"))
 df5 = left_join(df4, planos_saude_pop %>% select(PercPlanosSaude,IBGE), by = c("CO_MUNICIPIO_IBGE"="IBGE"))
 df6 = left_join(df5, ivs, by = c("CO_MUNICIPIO_IBGE"="IBGE"))
-df7 = left_join(df6, gini, by = c("CO_MUNICIPIO_IBGE"="IBGE"))
+df7 = left_join(df6, gini %>% mutate(IBGE = as.character(IBGE)), by = c("CO_MUNICIPIO_IBGE"="IBGE"))
 dados = left_join(df7, cob_esf_pop %>% select(CoberturaESF,"Município"), by = c("CO_MUNICIPIO_IBGE"="Município"))
 
 ####==============
@@ -934,13 +938,6 @@ vars_cuidado_compartilhado = c("v1171","v1172","v1173","v1174","v1175","v1176","
                                "v1201num","v12022","v12023","v12024","v12025","v12026","v121")
 dados21 = criar_indicador(dados20, vars_cuidado_compartilhado, "IndCuidadoCompartilhado")
 
-####===============
-#### Indicador TIC
-####===============
-DescritivaCat(dados21$Indicador_TIC_cat)
-# write.xlsx(DescritivaCat(dados$Indicador_TIC) %>% as.data.frame(), 'Tabela 18.xlsx', rowNames = T)
-# write.xlsx(DescritivaCat(dados$Indicador_TIC_cat) %>% as.data.frame(), 'Tabela 19.xlsx', rowNames = T)
-
 ####=================================
 #### Categorizar indicadores por UBS
 ####=================================
@@ -971,7 +968,7 @@ dados21_ind_ubs = dados21 %>%
   #        c(vars_integracao_aps, add_num(vars_integracao_aps)), IndIntegracaoAPS,
   #        c(vars_regulacao_assistencial, add_num(vars_regulacao_assistencial)), IndRegulacaoAssistencial,
   #        c(vars_cuidado_compartilhado, add_num(vars_cuidado_compartilhado)), IndCuidadoCompartilhado) %>%
-  mutate(IndicadorGeral = rowSums(across(c(IndSaudeSexual, IndPreNatal, IndSaudeMulher, IndSaudeCrianca,
+  mutate(Indicador_Panorama = rowSums(across(c(IndSaudeSexual, IndPreNatal, IndSaudeMulher, IndSaudeCrianca,
                                            IndHipertenso, IndDiabetico, IndObesidade, IndTuberculoseHanseniase,
                                            IndSofrimentoPsi, IndViolencia, IndIdosa, IndSaudeHomem,
                                            IndPessoasAcamadas, IndAcoesVacinacao, #IndPraticasIntComp,
@@ -1004,7 +1001,7 @@ dados21_ind_ubs = dados21 %>%
   #           IndIntegracaoAPS = mean(IndIntegracaoAPS, na.rm = TRUE),
   #           IndRegulacaoAssistencial = mean(IndRegulacaoAssistencial, na.rm = TRUE),
   #           IndCuidadoCompartilhado = mean(IndCuidadoCompartilhado, na.rm = TRUE),
-  #           IndicadorGeral = mean(IndicadorGeral, na.rm = TRUE))
+  #           Indicador_Panorama = mean(Indicador_Panorama, na.rm = TRUE))
 #write.xlsx(dados21_ind %>% as.data.frame(),'Dados com indicadores agrupados por municípios.xlsx')
 
 DescritivaCat(dados21_ind_ubs$IndSaudeSexual)
@@ -1049,8 +1046,8 @@ DescritivaNum(dados21_ind_ubs$IndPessoasAcamadas)
 DescritivaCat(dados21_ind_ubs$IndAcoesVacinacao)
 DescritivaNum(dados21_ind_ubs$IndAcoesVacinacao)
 
-#write.xlsx(DescritivaCat(dados21_ind_ubs$IndicadorGeral) %>% as.data.frame(),"Descritiva Indicador Geral.xlsx",rowNames = T)
-DescritivaNum(dados21_ind_ubs$IndicadorGeral)
+#write.xlsx(DescritivaCat(dados21_ind_ubs$Indicador_Panorama) %>% as.data.frame(),"Descritiva Indicador Geral.xlsx",rowNames = T)
+DescritivaNum(dados21_ind_ubs$Indicador_Panorama)
 
 dados21_ind_ubs$IndSaudeSexual_cat = factor(case_when(
   dados21_ind_ubs$IndSaudeSexual <= 3.000000 ~ "Péssimo",
@@ -1200,85 +1197,293 @@ dados21_ind_ubs$IndCuidadoCompartilhado_cat = factor(case_when(
   dados21_ind_ubs$IndCuidadoCompartilhado >  44.631579 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 
 #Até urgência e emergência
-dados21_ind_ubs$IndGeral_cat = factor(case_when(
-  dados21_ind_ubs$IndicadorGeral <= 49.26 ~ "Péssimo",
-  dados21_ind_ubs$IndicadorGeral > 49.26 & dados21_ind_ubs$IndicadorGeral <= 114.95 ~ "Ruim",
-  dados21_ind_ubs$IndicadorGeral > 114.95 & dados21_ind_ubs$IndicadorGeral <= 213.47 ~ "Regular",
-  dados21_ind_ubs$IndicadorGeral > 213.47 & dados21_ind_ubs$IndicadorGeral <= 262.74 ~ "Bom",
-  dados21_ind_ubs$IndicadorGeral > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
+dados21_ind_ubs$Indicador_Panorama_cat = factor(case_when(
+  dados21_ind_ubs$Indicador_Panorama <= 49.26 ~ "Péssimo",
+  dados21_ind_ubs$Indicador_Panorama > 49.26 & dados21_ind_ubs$Indicador_Panorama <= 114.95 ~ "Ruim",
+  dados21_ind_ubs$Indicador_Panorama > 114.95 & dados21_ind_ubs$Indicador_Panorama <= 213.47 ~ "Regular",
+  dados21_ind_ubs$Indicador_Panorama > 213.47 & dados21_ind_ubs$Indicador_Panorama <= 262.74 ~ "Bom",
+  dados21_ind_ubs$Indicador_Panorama > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 #write.xlsx(dados21_ind_ubs %>% as.data.frame(),'Dados com indicadores categorizados agrupados por ubs.xlsx')
 
 ####=============
 #### Comparações
 ####=============
+DescritivaCat(dados21_ind_ubs$Indicador_TIC_cat)
+# write.xlsx(DescritivaCat(dados21_ind_ubs$Indicador_TIC) %>% as.data.frame(), 'Tabela 18.xlsx', rowNames = T)
+# write.xlsx(DescritivaCat(dados21_ind_ubs$Indicador_TIC_cat) %>% as.data.frame(), 'Tabela 19.xlsx', rowNames = T)
+
+#write.xlsx(dados21_ind_ubs %>% as.data.frame(),'Dados censo com indicadores UBS.xlsx')
+
 Tabela1 = rbind(
-  QuiQuadrado_Fisher(dados21_ind_ubs$Indicador_TIC_cat,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$Indicador_TIC_cat,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V351,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V352,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V353,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V354,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V355,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V356,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V357,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V358,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V351,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V352,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V353,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V354,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V355,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V356,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V357,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V358,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V361,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V362,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V363,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V364,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V365,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V366,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V367,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V368,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V369,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3610,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3611,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3612,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V361,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V362,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V363,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V364,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V365,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V366,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V367,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V368,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V369,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3610,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3611,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3612,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$v304,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$v305,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3613,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3614,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3615,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3616,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3617,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3618,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$v304,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$v305,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3613,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3614,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3615,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3616,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3617,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3618,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3621,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3622,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3623,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3624,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3625,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3626,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3627,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3621,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3622,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3623,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3624,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3625,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3626,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3627,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V37,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3711,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3712,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3713,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3714,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3715,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3716,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3711,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3712,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3713,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3714,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3715,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3716,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V372,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V373,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3741,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3742,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3743,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3744,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3745,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3746,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3747,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3748,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3749,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V37410,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V37411,dados21_ind_ubs$IndGeral_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V325,dados21_ind_ubs$IndGeral_cat,'1','chisq'))
+  QuiQuadrado_Fisher(dados21_ind_ubs$V372,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V373,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3741,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3742,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3743,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3744,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3745,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3746,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3747,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3748,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3749,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37410,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37411,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V325,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  
+  QuiQuadrado_Fisher(dados21_ind_ubs$porte_populacional,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq')
+  )
+#write.xlsx(Tabela1 %>% as.data.frame(), 'Tabela 1.xlsx', rowNames = T)
 
-write.xlsx(Tabela1 %>% as.data.frame(), 'Tabela 1.xlsx', rowNames = T)
+dados21_ind_ubs %>% select(PercLeitos,PercPlanosSaude,ivs,Gini,CoberturaESF) %>% 
+  map(TesteDeNormalidade)
+
+Tabela2 = rbind(KruskalTeste(dados21_ind_ubs$PercLeitos,dados21_ind_ubs$Indicador_Panorama_cat)$tabela,
+                KruskalTeste(dados21_ind_ubs$PercPlanosSaude,dados21_ind_ubs$Indicador_Panorama_cat)$tabela,
+                KruskalTeste(dados21_ind_ubs$ivs,dados21_ind_ubs$Indicador_Panorama_cat)$tabela,
+                KruskalTeste(dados21_ind_ubs$Gini,dados21_ind_ubs$Indicador_Panorama_cat)$tabela,
+                KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$Indicador_Panorama_cat)$tabela)
+#write.xlsx(Tabela2 %>% as.data.frame(), 'Tabela 2.xlsx', rowNames = T)
+
+Tabela3 = rbind(
+  QuiQuadrado_Fisher(dados21_ind_ubs$Indicador_Panorama_cat,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  
+  QuiQuadrado_Fisher(dados21_ind_ubs$V351,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V352,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V353,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V354,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V355,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V356,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V357,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V358,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  
+  QuiQuadrado_Fisher(dados21_ind_ubs$V361,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V362,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V363,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V364,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V365,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V366,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V367,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V368,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V369,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3610,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3611,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3612,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  
+  QuiQuadrado_Fisher(dados21_ind_ubs$v304,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$v305,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3613,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3614,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3615,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3616,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3617,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3618,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3621,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3622,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3623,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3624,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3625,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3626,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3627,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3711,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3712,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3713,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3714,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3715,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3716,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  
+  QuiQuadrado_Fisher(dados21_ind_ubs$V372,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V373,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3741,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3742,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3743,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3744,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3745,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3746,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3747,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3748,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3749,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37410,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37411,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V325,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  
+  QuiQuadrado_Fisher(dados21_ind_ubs$porte_populacional,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq')
+)
+#write.xlsx(Tabela3 %>% as.data.frame(), 'Tabela 3.xlsx', rowNames = T)
+
+Tabela4 = rbind(KruskalTeste(dados21_ind_ubs$PercLeitos,dados21_ind_ubs$Indicador_TIC_cat)$tabela,
+                KruskalTeste(dados21_ind_ubs$PercPlanosSaude,dados21_ind_ubs$Indicador_TIC_cat)$tabela,
+                KruskalTeste(dados21_ind_ubs$ivs,dados21_ind_ubs$Indicador_TIC_cat)$tabela,
+                KruskalTeste(dados21_ind_ubs$Gini,dados21_ind_ubs$Indicador_TIC_cat)$tabela,
+                KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$Indicador_TIC_cat)$tabela)
+#write.xlsx(Tabela4 %>% as.data.frame(), 'Tabela 4.xlsx', rowNames = T)
+
+####===============
+#### Modelos - TIC
+####===============
+DescritivaCat(dados21_ind_ubs$Indicador_TIC_cat)
+DescritivaNum(dados21_ind_ubs$Indicador_TIC)
+hist(dados21_ind_ubs$Indicador_TIC)
+vars_numericas = dados21_ind_ubs[, c("PercLeitos", "PercPlanosSaude", "ivs", "Gini", "CoberturaESF")]
+vars_numericas = na.omit(vars_numericas)
+round(cor(vars_numericas, method = "pearson"), 3)
 
 
+# mod_TIC_uni1 = glm(Indicador_TIC ~ porte_populacional, data = dados21_ind_ubs, family = Gamma(link = 'log'))
+# mod_TIC_uni2 = glm(Indicador_TIC ~ PercLeitos, data = dados21_ind_ubs, family = Gamma(link = 'log'))
+# mod_TIC_uni3 = glm(Indicador_TIC ~ PercPlanosSaude, data = dados21_ind_ubs, family = Gamma(link = 'log'))
+# mod_TIC_uni4 = glm(Indicador_TIC ~ I(ivs/100), data = dados21_ind_ubs, family = Gamma(link = 'log'))
+# mod_TIC_uni5 = glm(Indicador_TIC ~ I(Gini/100), data = dados21_ind_ubs, family = Gamma(link = 'log'))
+# mod_TIC_uni6 = glm(Indicador_TIC ~ CoberturaESF, data = dados21_ind_ubs, family = Gamma(link = 'log'))
+# mod_TIC_uni7 = glm(Indicador_TIC ~ Indicador_Panorama_cat, data = dados21_ind_ubs, family = Gamma(link = 'log'))
+# summary(mod_TIC_uni1)
+# summary(mod_TIC_uni2)
+# summary(mod_TIC_uni3)
+# summary(mod_TIC_uni4)
+# summary(mod_TIC_uni5)
+# summary(mod_TIC_uni6)
+# summary(mod_TIC_uni7)
+# mod_TIC_multi_gamma = glm(Indicador_TIC ~ porte_populacional + PercLeitos + PercPlanosSaude + I(ivs/100) + 
+#                       I(Gini/100) + CoberturaESF + Indicador_Panorama_cat, 
+#                     data = dados21_ind_ubs, family = Gamma(link = 'log'))
+# summary(mod_TIC_multi_gamma)
+
+TabelaRegressaoLinear = function(modelo, casasdecimaisB = 3){
+  options(OutDec = ",")
+  coef = summary(modelo)$coefficients
+  ICinf = coef[,1] - 1.96 * coef[,2]
+  ICsup = coef[,1] + 1.96 * coef[,2]
+  
+  Tabela = data.frame(
+    "Variáveis" = rownames(coef),
+    "β" = round(coef[,1], casasdecimaisB),
+    "Erro Padrão" = round(coef[,2], casasdecimaisB),
+    "IC 95%" = paste0("[", round(ICinf, casasdecimaisB), "; ", round(ICsup, casasdecimaisB), "]"),
+    "Valor-p" = round(coef[,4], 5)
+  )
+  return(Tabela)
+}
+
+TabelaMultinomialOrdinal = function(modelo, casasdecimaisExpB = 3){
+  options(OutDec = ",")
+  coef = summary(modelo)$coefficients
+  
+  # cálculo de p-valor manual para polr ou multinom
+  if(ncol(coef) == 3){
+    p = 2 * pnorm(abs(coef[, "t value"]), lower.tail = FALSE)
+  } else {
+    p = coef[,4]
+  }
+  
+  ICinf = exp(coef[,1] - 1.96 * coef[,2])
+  ICsup = exp(coef[,1] + 1.96 * coef[,2])
+  
+  Tabela = data.frame(
+    "Variáveis" = rownames(coef),
+    "β" = round(coef[,1], casasdecimaisExpB),
+    "Exp(β)" = round(exp(coef[,1]), casasdecimaisExpB),
+    "Alteração (%)" = round((exp(coef[,1]) - 1) * 100, 2),
+    "IC (β) 95%" = paste0("[", round(ICinf, casasdecimaisExpB), "; ", round(ICsup, casasdecimaisExpB), "]"),
+    "Valor-p" = round(p, 5)
+  )
+  Tabela = Tabela[!grepl("\\|", Tabela$Variáveis), ]
+  return(Tabela)
+}
+
+mod_TIC_uni1 = lm(Indicador_TIC ~ porte_populacional, data = dados21_ind_ubs)
+mod_TIC_uni2 = lm(Indicador_TIC ~ PercLeitos, data = dados21_ind_ubs)
+mod_TIC_uni3 = lm(Indicador_TIC ~ PercPlanosSaude, data = dados21_ind_ubs)
+mod_TIC_uni4 = lm(Indicador_TIC ~ ivs, data = dados21_ind_ubs)
+mod_TIC_uni5 = lm(Indicador_TIC ~ Gini, data = dados21_ind_ubs)
+mod_TIC_uni6 = lm(Indicador_TIC ~ CoberturaESF, data = dados21_ind_ubs)
+mod_TIC_uni7 = lm(Indicador_TIC ~ Indicador_Panorama_cat, data = dados21_ind_ubs)
+# write.xlsx(rbind(TabelaRegressaoLinear(mod_TIC_uni1),TabelaRegressaoLinear(mod_TIC_uni2),
+#                  TabelaRegressaoLinear(mod_TIC_uni3),TabelaRegressaoLinear(mod_TIC_uni4),
+#                  TabelaRegressaoLinear(mod_TIC_uni5),TabelaRegressaoLinear(mod_TIC_uni6),
+#                  TabelaRegressaoLinear(mod_TIC_uni7)) %>% as.data.frame(), "Tabela 5.xlsx", rowNames = F)
+
+mod_TIC_multi = lm(Indicador_TIC ~ porte_populacional + PercLeitos + PercPlanosSaude + ivs + 
+                     Gini + #CoberturaESF + 
+                     Indicador_Panorama_cat, 
+                   data = dados21_ind_ubs)
+summary(mod_TIC_multi)
+#write.xlsx(rbind(TabelaRegressaoLinear(mod_TIC_multi)) %>% as.data.frame(), "Tabela 5.1.xlsx", rowNames = F)
+car::vif(mod_TIC_multi)
+
+mod_TIC_cat_uni1 = MASS::polr(Indicador_TIC_cat ~ porte_populacional, data = dados21_ind_ubs, Hess = TRUE)
+mod_TIC_cat_uni2 = MASS::polr(Indicador_TIC_cat ~ PercLeitos, data = dados21_ind_ubs, Hess = TRUE)
+mod_TIC_cat_uni3 = MASS::polr(Indicador_TIC_cat ~ PercPlanosSaude, data = dados21_ind_ubs, Hess = TRUE)
+mod_TIC_cat_uni4 = MASS::polr(Indicador_TIC_cat ~ ivs, data = dados21_ind_ubs, Hess = TRUE)
+mod_TIC_cat_uni5 = MASS::polr(Indicador_TIC_cat ~ Gini, data = dados21_ind_ubs, Hess = TRUE)
+mod_TIC_cat_uni6 = MASS::polr(Indicador_TIC_cat ~ CoberturaESF, data = dados21_ind_ubs, Hess = TRUE)
+mod_TIC_cat_uni7 = MASS::polr(Indicador_TIC_cat ~ Indicador_Panorama_cat, data = dados21_ind_ubs, Hess = TRUE)
+# write.xlsx(rbind(TabelaMultinomialOrdinal(mod_TIC_cat_uni1),TabelaMultinomialOrdinal(mod_TIC_cat_uni2),
+#                  TabelaMultinomialOrdinal(mod_TIC_cat_uni3),TabelaMultinomialOrdinal(mod_TIC_cat_uni4),
+#                  TabelaMultinomialOrdinal(mod_TIC_cat_uni5),TabelaMultinomialOrdinal(mod_TIC_cat_uni6),
+#                  TabelaMultinomialOrdinal(mod_TIC_cat_uni7)) %>% as.data.frame(), "Tabela 6.xlsx", rowNames = F)
+
+mod_TIC_cat_multi = MASS::polr(Indicador_TIC_cat ~ porte_populacional + PercLeitos + PercPlanosSaude +
+                     ivs + Gini + #CoberturaESF + 
+                       Indicador_Panorama_cat,
+                   data = dados21_ind_ubs, Hess = TRUE)
+write.xlsx(rbind(TabelaMultinomialOrdinal(mod_TIC_cat_multi)) %>% as.data.frame(), "Tabela 6.1.xlsx", rowNames = F)
+
+summary(mod_TIC_cat_multi)
+ctable = coef(summary(mod_TIC_cat_multi))
+p = pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
+ctable = cbind(ctable, "p value" = p)
+round(ctable %>% as.data.frame() %>% select('p value'),5)
 
 ####========================================
 #### Categorizar indicadores por municípios
@@ -1306,7 +1511,7 @@ dados21_ind_mun = dados21 %>%
   #        c(vars_integracao_aps, add_num(vars_integracao_aps)), IndIntegracaoAPS,
   #        c(vars_regulacao_assistencial, add_num(vars_regulacao_assistencial)), IndRegulacaoAssistencial,
   #        c(vars_cuidado_compartilhado, add_num(vars_cuidado_compartilhado)), IndCuidadoCompartilhado) %>%
-  mutate(IndicadorGeral = rowSums(across(c(IndSaudeSexual, IndPreNatal, IndSaudeMulher, IndSaudeCrianca,
+  mutate(Indicador_Panorama = rowSums(across(c(IndSaudeSexual, IndPreNatal, IndSaudeMulher, IndSaudeCrianca,
                                            IndHipertenso, IndDiabetico, IndObesidade, IndTuberculoseHanseniase,
                                            IndSofrimentoPsi, IndViolencia, IndIdosa, IndSaudeHomem,
                                            IndPessoasAcamadas, IndAcoesVacinacao, #IndPraticasIntComp,
@@ -1339,7 +1544,7 @@ dados21_ind_mun = dados21 %>%
             IndIntegracaoAPS = mean(IndIntegracaoAPS, na.rm = TRUE),
             IndRegulacaoAssistencial = mean(IndRegulacaoAssistencial, na.rm = TRUE),
             IndCuidadoCompartilhado = mean(IndCuidadoCompartilhado, na.rm = TRUE),
-            IndicadorGeral = mean(IndicadorGeral, na.rm = TRUE)) %>% as.data.frame()
+            Indicador_Panorama = mean(Indicador_Panorama, na.rm = TRUE)) %>% as.data.frame()
 #write.xlsx(dados21_ind %>% as.data.frame(),'Dados com indicadores agrupados por municípios.xlsx')
 
 dados21_ind_mun$IndSaudeSexual_cat = factor(case_when(
@@ -1490,12 +1695,12 @@ dados21_ind_mun$IndCuidadoCompartilhado_cat = factor(case_when(
   dados21_ind_mun$IndCuidadoCompartilhado >  44.631579 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 
 #Até urgência e emergência
-dados21_ind_mun$IndGeral_cat = factor(case_when(
-  dados21_ind_mun$IndicadorGeral <= 49.26 ~ "Péssimo",
-  dados21_ind_mun$IndicadorGeral > 49.26 & dados21_ind_mun$IndicadorGeral <= 114.95 ~ "Ruim",
-  dados21_ind_mun$IndicadorGeral > 114.95 & dados21_ind_mun$IndicadorGeral <= 213.47 ~ "Regular",
-  dados21_ind_mun$IndicadorGeral > 213.47 & dados21_ind_mun$IndicadorGeral <= 262.74 ~ "Bom",
-  dados21_ind_mun$IndicadorGeral > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
+dados21_ind_mun$Indicador_Panorama_cat = factor(case_when(
+  dados21_ind_mun$Indicador_Panorama <= 49.26 ~ "Péssimo",
+  dados21_ind_mun$Indicador_Panorama > 49.26 & dados21_ind_mun$Indicador_Panorama <= 114.95 ~ "Ruim",
+  dados21_ind_mun$Indicador_Panorama > 114.95 & dados21_ind_mun$Indicador_Panorama <= 213.47 ~ "Regular",
+  dados21_ind_mun$Indicador_Panorama > 213.47 & dados21_ind_mun$Indicador_Panorama <= 262.74 ~ "Bom",
+  dados21_ind_mun$Indicador_Panorama > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 #write.xlsx(dados21_ind_mun %>% as.data.frame(),'Dados com indicadores categorizados agrupados por município.xlsx')
 
 ####==================================================
@@ -1529,7 +1734,7 @@ dados_ind_rm_agg_rm = dados21_ind_rm %>%
   #        c(vars_integracao_aps, add_num(vars_integracao_aps)), IndIntegracaoAPS,
   #        c(vars_regulacao_assistencial, add_num(vars_regulacao_assistencial)), IndRegulacaoAssistencial,
   #        c(vars_cuidado_compartilhado, add_num(vars_cuidado_compartilhado)), IndCuidadoCompartilhado) %>%
-  mutate(IndicadorGeral = rowSums(across(c(IndSaudeSexual, IndPreNatal, IndSaudeMulher, IndSaudeCrianca,
+  mutate(Indicador_Panorama = rowSums(across(c(IndSaudeSexual, IndPreNatal, IndSaudeMulher, IndSaudeCrianca,
                                            IndHipertenso, IndDiabetico, IndObesidade, IndTuberculoseHanseniase,
                                            IndSofrimentoPsi, IndViolencia, IndIdosa, IndSaudeHomem,
                                            IndPessoasAcamadas, IndAcoesVacinacao, #IndPraticasIntComp,
@@ -1562,7 +1767,7 @@ dados_ind_rm_agg_rm = dados21_ind_rm %>%
             IndIntegracaoAPS = mean(IndIntegracaoAPS, na.rm = TRUE),
             IndRegulacaoAssistencial = mean(IndRegulacaoAssistencial, na.rm = TRUE),
             IndCuidadoCompartilhado = mean(IndCuidadoCompartilhado, na.rm = TRUE),
-            IndicadorGeral = mean(IndicadorGeral, na.rm = TRUE)) %>% as.data.frame()
+            Indicador_Panorama = mean(Indicador_Panorama, na.rm = TRUE)) %>% as.data.frame()
 
 dados_ind_rm_agg_rm$IndSaudeSexual_cat = factor(case_when(
   dados_ind_rm_agg_rm$IndSaudeSexual <= 3.000000 ~ "Péssimo",
@@ -1712,12 +1917,12 @@ dados_ind_rm_agg_rm$IndCuidadoCompartilhado_cat = factor(case_when(
   dados_ind_rm_agg_rm$IndCuidadoCompartilhado >  44.631579 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 
 #Até urgência e emergência
-dados_ind_rm_agg_rm$IndGeral_cat = factor(case_when(
-  dados_ind_rm_agg_rm$IndicadorGeral <= 49.26 ~ "Péssimo",
-  dados_ind_rm_agg_rm$IndicadorGeral > 49.26 & dados_ind_rm_agg_rm$IndicadorGeral <= 114.95 ~ "Ruim",
-  dados_ind_rm_agg_rm$IndicadorGeral > 114.95 & dados_ind_rm_agg_rm$IndicadorGeral <= 213.47 ~ "Regular",
-  dados_ind_rm_agg_rm$IndicadorGeral > 213.47 & dados_ind_rm_agg_rm$IndicadorGeral <= 262.74 ~ "Bom",
-  dados_ind_rm_agg_rm$IndicadorGeral > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
+dados_ind_rm_agg_rm$Indicador_Panorama_cat = factor(case_when(
+  dados_ind_rm_agg_rm$Indicador_Panorama <= 49.26 ~ "Péssimo",
+  dados_ind_rm_agg_rm$Indicador_Panorama > 49.26 & dados_ind_rm_agg_rm$Indicador_Panorama <= 114.95 ~ "Ruim",
+  dados_ind_rm_agg_rm$Indicador_Panorama > 114.95 & dados_ind_rm_agg_rm$Indicador_Panorama <= 213.47 ~ "Regular",
+  dados_ind_rm_agg_rm$Indicador_Panorama > 213.47 & dados_ind_rm_agg_rm$Indicador_Panorama <= 262.74 ~ "Bom",
+  dados_ind_rm_agg_rm$Indicador_Panorama > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 #write.xlsx(dados_ind_rm_agg_rm %>% as.data.frame(),'Dados com indicadores categorizados agrupados por região metropolitana.xlsx')
 
 ####====================================
@@ -1746,7 +1951,7 @@ dados21_ind_estado = dados21 %>%
   #        c(vars_integracao_aps, add_num(vars_integracao_aps)), IndIntegracaoAPS,
   #        c(vars_regulacao_assistencial, add_num(vars_regulacao_assistencial)), IndRegulacaoAssistencial,
   #        c(vars_cuidado_compartilhado, add_num(vars_cuidado_compartilhado)), IndCuidadoCompartilhado) %>%
-  mutate(IndicadorGeral = rowSums(across(c(IndSaudeSexual, IndPreNatal, IndSaudeMulher, IndSaudeCrianca,
+  mutate(Indicador_Panorama = rowSums(across(c(IndSaudeSexual, IndPreNatal, IndSaudeMulher, IndSaudeCrianca,
                                            IndHipertenso, IndDiabetico, IndObesidade, IndTuberculoseHanseniase,
                                            IndSofrimentoPsi, IndViolencia, IndIdosa, IndSaudeHomem,
                                            IndPessoasAcamadas, IndAcoesVacinacao, #IndPraticasIntComp,
@@ -1779,7 +1984,7 @@ dados21_ind_estado = dados21 %>%
             IndIntegracaoAPS = mean(IndIntegracaoAPS, na.rm = TRUE),
             IndRegulacaoAssistencial = mean(IndRegulacaoAssistencial, na.rm = TRUE),
             IndCuidadoCompartilhado = mean(IndCuidadoCompartilhado, na.rm = TRUE),
-            IndicadorGeral = mean(IndicadorGeral, na.rm = TRUE)) %>% as.data.frame()
+            Indicador_Panorama = mean(Indicador_Panorama, na.rm = TRUE)) %>% as.data.frame()
 #write.xlsx(dados21_ind %>% as.data.frame(),'Dados com indicadores agrupados por municípios.xlsx')
 
 dados21_ind_estado$IndSaudeSexual_cat = factor(case_when(
@@ -1930,12 +2135,12 @@ dados21_ind_estado$IndCuidadoCompartilhado_cat = factor(case_when(
   dados21_ind_estado$IndCuidadoCompartilhado >  44.631579 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 
 #Até urgência e emergência
-dados21_ind_estado$IndGeral_cat = factor(case_when(
-  dados21_ind_estado$IndicadorGeral <= 49.26 ~ "Péssimo",
-  dados21_ind_estado$IndicadorGeral > 49.26 & dados21_ind_estado$IndicadorGeral <= 114.95 ~ "Ruim",
-  dados21_ind_estado$IndicadorGeral > 114.95 & dados21_ind_estado$IndicadorGeral <= 213.47 ~ "Regular",
-  dados21_ind_estado$IndicadorGeral > 213.47 & dados21_ind_estado$IndicadorGeral <= 262.74 ~ "Bom",
-  dados21_ind_estado$IndicadorGeral > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
+dados21_ind_estado$Indicador_Panorama_cat = factor(case_when(
+  dados21_ind_estado$Indicador_Panorama <= 49.26 ~ "Péssimo",
+  dados21_ind_estado$Indicador_Panorama > 49.26 & dados21_ind_estado$Indicador_Panorama <= 114.95 ~ "Ruim",
+  dados21_ind_estado$Indicador_Panorama > 114.95 & dados21_ind_estado$Indicador_Panorama <= 213.47 ~ "Regular",
+  dados21_ind_estado$Indicador_Panorama > 213.47 & dados21_ind_estado$Indicador_Panorama <= 262.74 ~ "Bom",
+  dados21_ind_estado$Indicador_Panorama > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 #write.xlsx(dados21_ind_estado %>% as.data.frame(),'Dados com indicadores categorizados agrupados por estado.xlsx')
 
 ####====================================
@@ -1964,7 +2169,7 @@ dados21_ind_regiao = dados21 %>%
   #        c(vars_integracao_aps, add_num(vars_integracao_aps)), IndIntegracaoAPS,
   #        c(vars_regulacao_assistencial, add_num(vars_regulacao_assistencial)), IndRegulacaoAssistencial,
   #        c(vars_cuidado_compartilhado, add_num(vars_cuidado_compartilhado)), IndCuidadoCompartilhado) %>%
-  mutate(IndicadorGeral = rowSums(across(c(IndSaudeSexual, IndPreNatal, IndSaudeMulher, IndSaudeCrianca,
+  mutate(Indicador_Panorama = rowSums(across(c(IndSaudeSexual, IndPreNatal, IndSaudeMulher, IndSaudeCrianca,
                                            IndHipertenso, IndDiabetico, IndObesidade, IndTuberculoseHanseniase,
                                            IndSofrimentoPsi, IndViolencia, IndIdosa, IndSaudeHomem,
                                            IndPessoasAcamadas, IndAcoesVacinacao, #IndPraticasIntComp,
@@ -1997,7 +2202,7 @@ dados21_ind_regiao = dados21 %>%
             IndIntegracaoAPS = mean(IndIntegracaoAPS, na.rm = TRUE),
             IndRegulacaoAssistencial = mean(IndRegulacaoAssistencial, na.rm = TRUE),
             IndCuidadoCompartilhado = mean(IndCuidadoCompartilhado, na.rm = TRUE),
-            IndicadorGeral = mean(IndicadorGeral, na.rm = TRUE)) %>% as.data.frame()
+            Indicador_Panorama = mean(Indicador_Panorama, na.rm = TRUE)) %>% as.data.frame()
 #write.xlsx(dados21_ind %>% as.data.frame(),'Dados com indicadores agrupados por municípios.xlsx')
 
 dados21_ind_regiao$IndSaudeSexual_cat = factor(case_when(
@@ -2148,12 +2353,12 @@ dados21_ind_regiao$IndCuidadoCompartilhado_cat = factor(case_when(
   dados21_ind_regiao$IndCuidadoCompartilhado >  44.631579 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 
 #Até urgência e emergência
-dados21_ind_regiao$IndGeral_cat = factor(case_when(
-  dados21_ind_regiao$IndicadorGeral <= 49.26 ~ "Péssimo",
-  dados21_ind_regiao$IndicadorGeral > 49.26 & dados21_ind_regiao$IndicadorGeral <= 114.95 ~ "Ruim",
-  dados21_ind_regiao$IndicadorGeral > 114.95 & dados21_ind_regiao$IndicadorGeral <= 213.47 ~ "Regular",
-  dados21_ind_regiao$IndicadorGeral > 213.47 & dados21_ind_regiao$IndicadorGeral <= 262.74 ~ "Bom",
-  dados21_ind_regiao$IndicadorGeral > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
+dados21_ind_regiao$Indicador_Panorama_cat = factor(case_when(
+  dados21_ind_regiao$Indicador_Panorama <= 49.26 ~ "Péssimo",
+  dados21_ind_regiao$Indicador_Panorama > 49.26 & dados21_ind_regiao$Indicador_Panorama <= 114.95 ~ "Ruim",
+  dados21_ind_regiao$Indicador_Panorama > 114.95 & dados21_ind_regiao$Indicador_Panorama <= 213.47 ~ "Regular",
+  dados21_ind_regiao$Indicador_Panorama > 213.47 & dados21_ind_regiao$Indicador_Panorama <= 262.74 ~ "Bom",
+  dados21_ind_regiao$Indicador_Panorama > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 #write.xlsx(dados21_ind_regiao %>% as.data.frame(),'Dados com indicadores categorizados agrupados por região.xlsx')
 
 ####==========
@@ -2168,7 +2373,7 @@ Tabela1 = do.call(rbind,dados21_ind_ubs %>% select(IndSaudeSexual_cat, IndPreNat
                                                    IndPessoasAcamadas_cat, IndAcoesVacinacao_cat, #IndPraticasIntComp_cat,
                                                    IndAtendimentoUrgEmerg_cat, IndAtendimentoProgDemandaEsp_cat,
                                                    IndAtendimentoDemandaEsp_cat, IndIntegracaoAPS_cat, IndRegulacaoAssistencial_cat,
-                                                   IndCuidadoCompartilhado_cat, IndGeral_cat) %>% map(DescritivaCat))
+                                                   IndCuidadoCompartilhado_cat, Indicador_Panorama_cat) %>% map(DescritivaCat))
 #write.xlsx(Tabela1 %>% as.data.frame(),"Tabela 1.xlsx", rowNames = T)
 
 Tabela2 = do.call(rbind,lapply(c('IndSaudeSexual_cat', 'IndPreNatal_cat', 'IndSaudeMulher_cat', 'IndSaudeCrianca_cat',
@@ -2177,7 +2382,7 @@ Tabela2 = do.call(rbind,lapply(c('IndSaudeSexual_cat', 'IndPreNatal_cat', 'IndSa
                                  'IndPessoasAcamadas_cat', 'IndAcoesVacinacao_cat', #'IndPraticasIntComp_cat',
                                  'IndAtendimentoUrgEmerg_cat', 'IndAtendimentoProgDemandaEsp_cat',
                                  'IndAtendimentoDemandaEsp_cat', 'IndIntegracaoAPS_cat', 'IndRegulacaoAssistencial_cat',
-                                 'IndCuidadoCompartilhado_cat', 'IndGeral_cat'), function(v) {
+                                 'IndCuidadoCompartilhado_cat', 'Indicador_Panorama_cat'), function(v) {
                                    QuiQuadrado_Fisher(dados21_ind_ubs[[v]], dados21_ind_ubs$Regiao, '2', 'chisq.simulate')}))
 #write.xlsx(Tabela2 %>% as.data.frame(),"Tabela 2.xlsx", rowNames = T)
 
@@ -2187,7 +2392,7 @@ Tabela3 = do.call(rbind,lapply(c('IndSaudeSexual_cat', 'IndPreNatal_cat', 'IndSa
                                  'IndPessoasAcamadas_cat', 'IndAcoesVacinacao_cat', #'IndPraticasIntComp_cat',
                                  'IndAtendimentoUrgEmerg_cat', 'IndAtendimentoProgDemandaEsp_cat',
                                  'IndAtendimentoDemandaEsp_cat', 'IndIntegracaoAPS_cat', 'IndRegulacaoAssistencial_cat',
-                                 'IndCuidadoCompartilhado_cat', 'IndGeral_cat'), function(v) {
+                                 'IndCuidadoCompartilhado_cat', 'Indicador_Panorama_cat'), function(v) {
                                    QuiQuadrado_Fisher(dados21_ind_ubs[[v]], dados21_ind_ubs$V17, '2', 'chisq.simulate')}))
 #write.xlsx(Tabela3 %>% as.data.frame(),"Tabela 3.xlsx", rowNames = T)
 
@@ -2200,7 +2405,7 @@ Tabela4 = do.call(rbind,dados21_ind_mun %>% select(IndSaudeSexual_cat, IndPreNat
                                                    IndPessoasAcamadas_cat, IndAcoesVacinacao_cat, #IndPraticasIntComp_cat,
                                                    IndAtendimentoUrgEmerg_cat, IndAtendimentoProgDemandaEsp_cat,
                                                    IndAtendimentoDemandaEsp_cat, IndIntegracaoAPS_cat, IndRegulacaoAssistencial_cat,
-                                                   IndCuidadoCompartilhado_cat, IndGeral_cat) %>% map(DescritivaCat))
+                                                   IndCuidadoCompartilhado_cat, Indicador_Panorama_cat) %>% map(DescritivaCat))
 #write.xlsx(Tabela4 %>% as.data.frame(),"Tabela 4.xlsx", rowNames = T)
 
 Tabela5 = do.call(rbind,lapply(c('IndSaudeSexual_cat', 'IndPreNatal_cat', 'IndSaudeMulher_cat', 'IndSaudeCrianca_cat',
@@ -2209,7 +2414,7 @@ Tabela5 = do.call(rbind,lapply(c('IndSaudeSexual_cat', 'IndPreNatal_cat', 'IndSa
                                  'IndPessoasAcamadas_cat', 'IndAcoesVacinacao_cat', #'IndPraticasIntComp_cat',
                                  'IndAtendimentoUrgEmerg_cat', 'IndAtendimentoProgDemandaEsp_cat',
                                  'IndAtendimentoDemandaEsp_cat', 'IndIntegracaoAPS_cat', 'IndRegulacaoAssistencial_cat',
-                                 'IndCuidadoCompartilhado_cat', 'IndGeral_cat'), function(v) {
+                                 'IndCuidadoCompartilhado_cat', 'Indicador_Panorama_cat'), function(v) {
                                    QuiQuadrado_Fisher(dados21_ind_mun[[v]], dados21_ind_mun$Regiao, '2', 'chisq.simulate')}))
 #write.xlsx(Tabela5 %>% as.data.frame(),"Tabela 5.xlsx", rowNames = T)
 
@@ -2219,7 +2424,7 @@ Tabela6 = do.call(rbind,lapply(c('IndSaudeSexual_cat', 'IndPreNatal_cat', 'IndSa
                                  'IndPessoasAcamadas_cat', 'IndAcoesVacinacao_cat', #'IndPraticasIntComp_cat',
                                  'IndAtendimentoUrgEmerg_cat', 'IndAtendimentoProgDemandaEsp_cat',
                                  'IndAtendimentoDemandaEsp_cat', 'IndIntegracaoAPS_cat', 'IndRegulacaoAssistencial_cat',
-                                 'IndCuidadoCompartilhado_cat', 'IndGeral_cat'), function(v) {
+                                 'IndCuidadoCompartilhado_cat', 'Indicador_Panorama_cat'), function(v) {
                                    QuiQuadrado_Fisher(dados21_ind_mun[[v]], dados21_ind_mun$V17, '2', 'chisq.simulate')}))
 #write.xlsx(Tabela6 %>% as.data.frame(),"Tabela 6.xlsx", rowNames = T)
 
@@ -2232,7 +2437,7 @@ Tabela7 = do.call(rbind,dados_ind_rm_agg_rm %>% select(IndSaudeSexual_cat, IndPr
                                                    IndPessoasAcamadas_cat, IndAcoesVacinacao_cat, #IndPraticasIntComp_cat,
                                                    IndAtendimentoUrgEmerg_cat, IndAtendimentoProgDemandaEsp_cat,
                                                    IndAtendimentoDemandaEsp_cat, IndIntegracaoAPS_cat, IndRegulacaoAssistencial_cat,
-                                                   IndCuidadoCompartilhado_cat, IndGeral_cat) %>% map(DescritivaCat))
+                                                   IndCuidadoCompartilhado_cat, Indicador_Panorama_cat) %>% map(DescritivaCat))
 #write.xlsx(Tabela7 %>% as.data.frame(),"Tabela 7.xlsx", rowNames = T)
 
 Tabela8 = do.call(rbind,lapply(c('IndSaudeSexual_cat', 'IndPreNatal_cat', 'IndSaudeMulher_cat', 'IndSaudeCrianca_cat',
@@ -2241,7 +2446,7 @@ Tabela8 = do.call(rbind,lapply(c('IndSaudeSexual_cat', 'IndPreNatal_cat', 'IndSa
                                  'IndPessoasAcamadas_cat', 'IndAcoesVacinacao_cat', #'IndPraticasIntComp_cat',
                                  'IndAtendimentoUrgEmerg_cat', 'IndAtendimentoProgDemandaEsp_cat',
                                  'IndAtendimentoDemandaEsp_cat', 'IndIntegracaoAPS_cat', 'IndRegulacaoAssistencial_cat',
-                                 'IndCuidadoCompartilhado_cat', 'IndGeral_cat'), function(v) {
+                                 'IndCuidadoCompartilhado_cat', 'Indicador_Panorama_cat'), function(v) {
                                    QuiQuadrado_Fisher(dados_ind_rm_agg_rm[[v]], dados_ind_rm_agg_rm$Regiao, '2', 'chisq.simulate')}))
 #write.xlsx(Tabela8 %>% as.data.frame(),"Tabela 8.xlsx", rowNames = T)
 
@@ -2251,7 +2456,7 @@ Tabela9 = do.call(rbind,lapply(c('IndSaudeSexual_cat', 'IndPreNatal_cat', 'IndSa
                                  'IndPessoasAcamadas_cat', 'IndAcoesVacinacao_cat', #'IndPraticasIntComp_cat',
                                  'IndAtendimentoUrgEmerg_cat', 'IndAtendimentoProgDemandaEsp_cat',
                                  'IndAtendimentoDemandaEsp_cat', 'IndIntegracaoAPS_cat', 'IndRegulacaoAssistencial_cat',
-                                 'IndCuidadoCompartilhado_cat', 'IndGeral_cat'), function(v) {
+                                 'IndCuidadoCompartilhado_cat', 'Indicador_Panorama_cat'), function(v) {
                                    QuiQuadrado_Fisher(dados_ind_rm_agg_rm[[v]], dados_ind_rm_agg_rm$V17, '2', 'chisq.simulate')}))
 #write.xlsx(Tabela9 %>% as.data.frame(),"Tabela 9.xlsx", rowNames = T)
 
@@ -2264,7 +2469,7 @@ Tabela10 = do.call(rbind,dados21_ind_estado %>% select(IndSaudeSexual_cat, IndPr
                                                        IndPessoasAcamadas_cat, IndAcoesVacinacao_cat, #IndPraticasIntComp_cat,
                                                        IndAtendimentoUrgEmerg_cat, IndAtendimentoProgDemandaEsp_cat,
                                                        IndAtendimentoDemandaEsp_cat, IndIntegracaoAPS_cat, IndRegulacaoAssistencial_cat,
-                                                       IndCuidadoCompartilhado_cat, IndGeral_cat) %>% map(DescritivaCat))
+                                                       IndCuidadoCompartilhado_cat, Indicador_Panorama_cat) %>% map(DescritivaCat))
 write.xlsx(Tabela10 %>% as.data.frame(),"Tabela 10.xlsx", rowNames = T)
 
 Tabela11 = do.call(rbind,lapply(c('IndSaudeSexual_cat', 'IndPreNatal_cat', 'IndSaudeMulher_cat', 'IndSaudeCrianca_cat',
@@ -2273,7 +2478,7 @@ Tabela11 = do.call(rbind,lapply(c('IndSaudeSexual_cat', 'IndPreNatal_cat', 'IndS
                                   'IndPessoasAcamadas_cat', 'IndAcoesVacinacao_cat', #'IndPraticasIntComp_cat',
                                   'IndAtendimentoUrgEmerg_cat', 'IndAtendimentoProgDemandaEsp_cat',
                                   'IndAtendimentoDemandaEsp_cat', 'IndIntegracaoAPS_cat', 'IndRegulacaoAssistencial_cat',
-                                  'IndCuidadoCompartilhado_cat', 'IndGeral_cat'), function(v) {
+                                  'IndCuidadoCompartilhado_cat', 'Indicador_Panorama_cat'), function(v) {
                                     QuiQuadrado_Fisher(dados21_ind_estado[[v]], dados21_ind_estado$Regiao, '2', 'chisq.simulate')}))
 write.xlsx(Tabela11 %>% as.data.frame(),"Tabela 11.xlsx", rowNames = T)
 
@@ -2286,7 +2491,7 @@ Tabela12 = do.call(rbind,dados21_ind_regiao %>% select(IndSaudeSexual_cat, IndPr
                                                        IndPessoasAcamadas_cat, IndAcoesVacinacao_cat, #IndPraticasIntComp_cat,
                                                        IndAtendimentoUrgEmerg_cat, IndAtendimentoProgDemandaEsp_cat,
                                                        IndAtendimentoDemandaEsp_cat, IndIntegracaoAPS_cat, IndRegulacaoAssistencial_cat,
-                                                       IndCuidadoCompartilhado_cat, IndGeral_cat) %>% map(DescritivaCat))
+                                                       IndCuidadoCompartilhado_cat, Indicador_Panorama_cat) %>% map(DescritivaCat))
 write.xlsx(Tabela12 %>% as.data.frame(),"Tabela 12.xlsx", rowNames = T)
 
 ####========
