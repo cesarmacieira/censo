@@ -46,6 +46,48 @@ TabelaGLMLogistica = function(modelo,casasdecimaisExpB=F){
   return(Tabela)
 }
 
+TabelaRegressaoLinear = function(modelo, casasdecimaisB = 3){
+  options(OutDec = ",")
+  coef = summary(modelo)$coefficients
+  ICinf = coef[,1] - 1.96 * coef[,2]
+  ICsup = coef[,1] + 1.96 * coef[,2]
+  
+  Tabela = data.frame(
+    "Variáveis" = rownames(coef),
+    "β" = round(coef[,1], casasdecimaisB),
+    "Erro Padrão" = round(coef[,2], casasdecimaisB),
+    "IC 95%" = paste0("[", round(ICinf, casasdecimaisB), "; ", round(ICsup, casasdecimaisB), "]"),
+    "Valor-p" = round(coef[,4], 5)
+  )
+  return(Tabela)
+}
+
+TabelaMultinomialOrdinal = function(modelo, casasdecimaisExpB = 3){
+  options(OutDec = ",")
+  coef = summary(modelo)$coefficients
+  
+  # cálculo de p-valor manual para polr ou multinom
+  if(ncol(coef) == 3){
+    p = 2 * pnorm(abs(coef[, "t value"]), lower.tail = FALSE)
+  } else {
+    p = coef[,4]
+  }
+  
+  ICinf = exp(coef[,1] - 1.96 * coef[,2])
+  ICsup = exp(coef[,1] + 1.96 * coef[,2])
+  
+  Tabela = data.frame(
+    "Variáveis" = rownames(coef),
+    "β" = round(coef[,1], casasdecimaisExpB),
+    "Exp(β)" = round(exp(coef[,1]), casasdecimaisExpB),
+    "Alteração (%)" = round((exp(coef[,1]) - 1) * 100, 2),
+    "IC (β) 95%" = paste0("[", round(ICinf, casasdecimaisExpB), "; ", round(ICsup, casasdecimaisExpB), "]"),
+    "Valor-p" = round(p, 5)
+  )
+  Tabela = Tabela[!grepl("\\|", Tabela$Variáveis), ]
+  return(Tabela)
+}
+
 DescritivaCat = function(x){
   tabela = cbind(table(x), prop.table(table(x)))
   colnames(tabela) = c('Freq. Absoluta (N)', 'Freq. Relativa (%)')
@@ -1379,7 +1421,6 @@ vars_numericas = dados21_ind_ubs[, c("PercLeitos", "PercPlanosSaude", "ivs", "Gi
 vars_numericas = na.omit(vars_numericas)
 round(cor(vars_numericas, method = "pearson"), 3)
 
-
 # mod_TIC_uni1 = glm(Indicador_TIC ~ porte_populacional, data = dados21_ind_ubs, family = Gamma(link = 'log'))
 # mod_TIC_uni2 = glm(Indicador_TIC ~ PercLeitos, data = dados21_ind_ubs, family = Gamma(link = 'log'))
 # mod_TIC_uni3 = glm(Indicador_TIC ~ PercPlanosSaude, data = dados21_ind_ubs, family = Gamma(link = 'log'))
@@ -1398,48 +1439,6 @@ round(cor(vars_numericas, method = "pearson"), 3)
 #                       I(Gini/100) + CoberturaESF + Indicador_Panorama_cat, 
 #                     data = dados21_ind_ubs, family = Gamma(link = 'log'))
 # summary(mod_TIC_multi_gamma)
-
-TabelaRegressaoLinear = function(modelo, casasdecimaisB = 3){
-  options(OutDec = ",")
-  coef = summary(modelo)$coefficients
-  ICinf = coef[,1] - 1.96 * coef[,2]
-  ICsup = coef[,1] + 1.96 * coef[,2]
-  
-  Tabela = data.frame(
-    "Variáveis" = rownames(coef),
-    "β" = round(coef[,1], casasdecimaisB),
-    "Erro Padrão" = round(coef[,2], casasdecimaisB),
-    "IC 95%" = paste0("[", round(ICinf, casasdecimaisB), "; ", round(ICsup, casasdecimaisB), "]"),
-    "Valor-p" = round(coef[,4], 5)
-  )
-  return(Tabela)
-}
-
-TabelaMultinomialOrdinal = function(modelo, casasdecimaisExpB = 3){
-  options(OutDec = ",")
-  coef = summary(modelo)$coefficients
-  
-  # cálculo de p-valor manual para polr ou multinom
-  if(ncol(coef) == 3){
-    p = 2 * pnorm(abs(coef[, "t value"]), lower.tail = FALSE)
-  } else {
-    p = coef[,4]
-  }
-  
-  ICinf = exp(coef[,1] - 1.96 * coef[,2])
-  ICsup = exp(coef[,1] + 1.96 * coef[,2])
-  
-  Tabela = data.frame(
-    "Variáveis" = rownames(coef),
-    "β" = round(coef[,1], casasdecimaisExpB),
-    "Exp(β)" = round(exp(coef[,1]), casasdecimaisExpB),
-    "Alteração (%)" = round((exp(coef[,1]) - 1) * 100, 2),
-    "IC (β) 95%" = paste0("[", round(ICinf, casasdecimaisExpB), "; ", round(ICsup, casasdecimaisExpB), "]"),
-    "Valor-p" = round(p, 5)
-  )
-  Tabela = Tabela[!grepl("\\|", Tabela$Variáveis), ]
-  return(Tabela)
-}
 
 mod_TIC_uni1 = lm(Indicador_TIC ~ porte_populacional, data = dados21_ind_ubs)
 mod_TIC_uni2 = lm(Indicador_TIC ~ PercLeitos, data = dados21_ind_ubs)
@@ -1477,13 +1476,59 @@ mod_TIC_cat_multi = MASS::polr(Indicador_TIC_cat ~ porte_populacional + PercLeit
                      ivs + Gini + #CoberturaESF + 
                        Indicador_Panorama_cat,
                    data = dados21_ind_ubs, Hess = TRUE)
-write.xlsx(rbind(TabelaMultinomialOrdinal(mod_TIC_cat_multi)) %>% as.data.frame(), "Tabela 6.1.xlsx", rowNames = F)
-
 summary(mod_TIC_cat_multi)
 ctable = coef(summary(mod_TIC_cat_multi))
 p = pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
 ctable = cbind(ctable, "p value" = p)
 round(ctable %>% as.data.frame() %>% select('p value'),5)
+#write.xlsx(rbind(TabelaMultinomialOrdinal(mod_TIC_cat_multi)) %>% as.data.frame(), "Tabela 6.1.xlsx", rowNames = F)
+
+####====================
+#### Modelos - Panorama
+####====================
+DescritivaCat(dados21_ind_ubs$Indicador_Panorama_cat)
+DescritivaNum(dados21_ind_ubs$Indicador_Panorama)
+hist(dados21_ind_ubs$Indicador_Panorama)
+
+mod_Panorama_uni1 = lm(Indicador_Panorama ~ porte_populacional, data = dados21_ind_ubs)
+mod_Panorama_uni2 = lm(Indicador_Panorama ~ PercLeitos, data = dados21_ind_ubs)
+mod_Panorama_uni3 = lm(Indicador_Panorama ~ PercPlanosSaude, data = dados21_ind_ubs)
+mod_Panorama_uni4 = lm(Indicador_Panorama ~ ivs, data = dados21_ind_ubs)
+mod_Panorama_uni5 = lm(Indicador_Panorama ~ Gini, data = dados21_ind_ubs)
+mod_Panorama_uni6 = lm(Indicador_Panorama ~ CoberturaESF, data = dados21_ind_ubs)
+mod_Panorama_uni7 = lm(Indicador_Panorama ~ Indicador_TIC_cat, data = dados21_ind_ubs)
+write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_uni1),TabelaRegressaoLinear(mod_Panorama_uni2),
+                 TabelaRegressaoLinear(mod_Panorama_uni3),TabelaRegressaoLinear(mod_Panorama_uni4),
+                 TabelaRegressaoLinear(mod_Panorama_uni5),TabelaRegressaoLinear(mod_Panorama_uni6),
+                 TabelaRegressaoLinear(mod_Panorama_uni7)) %>% as.data.frame(), "Tabela 7.xlsx", rowNames = F)
+
+mod_Panorama_multi = lm(Indicador_Panorama ~ porte_populacional + PercLeitos + PercPlanosSaude + ivs + 
+                     Gini + CoberturaESF + 
+                       Indicador_TIC_cat, 
+                   data = dados21_ind_ubs)
+summary(mod_Panorama_multi)
+write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_multi)) %>% as.data.frame(), "Tabela 7.1.xlsx", rowNames = F)
+car::vif(mod_Panorama_multi)
+
+mod_Panorama_cat_uni1 = MASS::polr(Indicador_Panorama_cat ~ porte_populacional, data = dados21_ind_ubs, Hess = TRUE)
+mod_Panorama_cat_uni2 = MASS::polr(Indicador_Panorama_cat ~ PercLeitos, data = dados21_ind_ubs, Hess = TRUE)
+mod_Panorama_cat_uni3 = MASS::polr(Indicador_Panorama_cat ~ PercPlanosSaude, data = dados21_ind_ubs, Hess = TRUE)
+mod_Panorama_cat_uni4 = MASS::polr(Indicador_Panorama_cat ~ ivs, data = dados21_ind_ubs, Hess = TRUE)
+mod_Panorama_cat_uni5 = MASS::polr(Indicador_Panorama_cat ~ Gini, data = dados21_ind_ubs, Hess = TRUE)
+mod_Panorama_cat_uni6 = MASS::polr(Indicador_Panorama_cat ~ CoberturaESF, data = dados21_ind_ubs, Hess = TRUE)
+mod_Panorama_cat_uni7 = MASS::polr(Indicador_Panorama_cat ~ Indicador_TIC_cat, data = dados21_ind_ubs, Hess = TRUE)
+write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_uni1),TabelaMultinomialOrdinal(mod_Panorama_cat_uni2),
+                 TabelaMultinomialOrdinal(mod_Panorama_cat_uni3),TabelaMultinomialOrdinal(mod_Panorama_cat_uni4),
+                 TabelaMultinomialOrdinal(mod_Panorama_cat_uni5),TabelaMultinomialOrdinal(mod_Panorama_cat_uni6),
+                 TabelaMultinomialOrdinal(mod_Panorama_cat_uni7)) %>% as.data.frame(), "Tabela 8.xlsx", rowNames = F)
+
+mod_Panorama_cat_multi = MASS::polr(Indicador_Panorama_cat ~ porte_populacional + PercLeitos + PercPlanosSaude +
+                                      ivs + Gini + CoberturaESF + 
+                                      Indicador_TIC_cat,
+                                    data = dados21_ind_ubs, Hess = TRUE)
+summary(mod_Panorama_cat_multi)
+write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_multi)) %>% as.data.frame(), "Tabela 8.1.xlsx", rowNames = F)
+
 
 ####========================================
 #### Categorizar indicadores por municípios
