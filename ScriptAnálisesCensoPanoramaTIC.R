@@ -1497,17 +1497,17 @@ mod_Panorama_uni4 = lm(Indicador_Panorama ~ ivs, data = dados21_ind_ubs)
 mod_Panorama_uni5 = lm(Indicador_Panorama ~ Gini, data = dados21_ind_ubs)
 mod_Panorama_uni6 = lm(Indicador_Panorama ~ CoberturaESF, data = dados21_ind_ubs)
 mod_Panorama_uni7 = lm(Indicador_Panorama ~ Indicador_TIC_cat, data = dados21_ind_ubs)
-write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_uni1),TabelaRegressaoLinear(mod_Panorama_uni2),
-                 TabelaRegressaoLinear(mod_Panorama_uni3),TabelaRegressaoLinear(mod_Panorama_uni4),
-                 TabelaRegressaoLinear(mod_Panorama_uni5),TabelaRegressaoLinear(mod_Panorama_uni6),
-                 TabelaRegressaoLinear(mod_Panorama_uni7)) %>% as.data.frame(), "Tabela 7.xlsx", rowNames = F)
+# write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_uni1),TabelaRegressaoLinear(mod_Panorama_uni2),
+#                  TabelaRegressaoLinear(mod_Panorama_uni3),TabelaRegressaoLinear(mod_Panorama_uni4),
+#                  TabelaRegressaoLinear(mod_Panorama_uni5),TabelaRegressaoLinear(mod_Panorama_uni6),
+#                  TabelaRegressaoLinear(mod_Panorama_uni7)) %>% as.data.frame(), "Tabela 7.xlsx", rowNames = F)
 
 mod_Panorama_multi = lm(Indicador_Panorama ~ porte_populacional + PercLeitos + PercPlanosSaude + ivs + 
                      Gini + CoberturaESF + 
                        Indicador_TIC_cat, 
                    data = dados21_ind_ubs)
 summary(mod_Panorama_multi)
-write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_multi)) %>% as.data.frame(), "Tabela 7.1.xlsx", rowNames = F)
+# write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_multi)) %>% as.data.frame(), "Tabela 7.1.xlsx", rowNames = F)
 car::vif(mod_Panorama_multi)
 
 mod_Panorama_cat_uni1 = MASS::polr(Indicador_Panorama_cat ~ porte_populacional, data = dados21_ind_ubs, Hess = TRUE)
@@ -1517,17 +1517,17 @@ mod_Panorama_cat_uni4 = MASS::polr(Indicador_Panorama_cat ~ ivs, data = dados21_
 mod_Panorama_cat_uni5 = MASS::polr(Indicador_Panorama_cat ~ Gini, data = dados21_ind_ubs, Hess = TRUE)
 mod_Panorama_cat_uni6 = MASS::polr(Indicador_Panorama_cat ~ CoberturaESF, data = dados21_ind_ubs, Hess = TRUE)
 mod_Panorama_cat_uni7 = MASS::polr(Indicador_Panorama_cat ~ Indicador_TIC_cat, data = dados21_ind_ubs, Hess = TRUE)
-write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_uni1),TabelaMultinomialOrdinal(mod_Panorama_cat_uni2),
-                 TabelaMultinomialOrdinal(mod_Panorama_cat_uni3),TabelaMultinomialOrdinal(mod_Panorama_cat_uni4),
-                 TabelaMultinomialOrdinal(mod_Panorama_cat_uni5),TabelaMultinomialOrdinal(mod_Panorama_cat_uni6),
-                 TabelaMultinomialOrdinal(mod_Panorama_cat_uni7)) %>% as.data.frame(), "Tabela 8.xlsx", rowNames = F)
+# write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_uni1),TabelaMultinomialOrdinal(mod_Panorama_cat_uni2),
+#                  TabelaMultinomialOrdinal(mod_Panorama_cat_uni3),TabelaMultinomialOrdinal(mod_Panorama_cat_uni4),
+#                  TabelaMultinomialOrdinal(mod_Panorama_cat_uni5),TabelaMultinomialOrdinal(mod_Panorama_cat_uni6),
+#                  TabelaMultinomialOrdinal(mod_Panorama_cat_uni7)) %>% as.data.frame(), "Tabela 8.xlsx", rowNames = F)
 
 mod_Panorama_cat_multi = MASS::polr(Indicador_Panorama_cat ~ porte_populacional + PercLeitos + PercPlanosSaude +
                                       ivs + Gini + CoberturaESF + 
                                       Indicador_TIC_cat,
                                     data = dados21_ind_ubs, Hess = TRUE)
 summary(mod_Panorama_cat_multi)
-write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_multi)) %>% as.data.frame(), "Tabela 8.1.xlsx", rowNames = F)
+#write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_multi)) %>% as.data.frame(), "Tabela 8.1.xlsx", rowNames = F)
 
 
 ####========================================
