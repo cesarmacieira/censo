@@ -1247,9 +1247,9 @@ dados21_ind_ubs$Indicador_Panorama_cat = factor(case_when(
   dados21_ind_ubs$Indicador_Panorama > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 #write.xlsx(dados21_ind_ubs %>% as.data.frame(),'Dados com indicadores categorizados agrupados por ubs.xlsx')
 
-####=============
-#### Comparações
-####=============
+####=============================
+#### Comparações TIC  e Panorama
+####=============================
 DescritivaCat(dados21_ind_ubs$Indicador_TIC_cat)
 # write.xlsx(DescritivaCat(dados21_ind_ubs$Indicador_TIC) %>% as.data.frame(), 'Tabela 18.xlsx', rowNames = T)
 # write.xlsx(DescritivaCat(dados21_ind_ubs$Indicador_TIC_cat) %>% as.data.frame(), 'Tabela 19.xlsx', rowNames = T)
@@ -1411,6 +1411,34 @@ Tabela4 = rbind(KruskalTeste(dados21_ind_ubs$PercLeitos,dados21_ind_ubs$Indicado
                 KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$Indicador_TIC_cat)$tabela)
 #write.xlsx(Tabela4 %>% as.data.frame(), 'Tabela 4.xlsx', rowNames = T)
 
+####=============================
+#### Comparações TIC  e Panorama
+####=============================
+gera_tabela_chi <- function(vars, indicador, nome_arquivo) {
+  resultados <- lapply(vars, function(v) QuiQuadrado_Fisher(dados21_ind_ubs[[v]], dados21_ind_ubs[[indicador]], '1', 'chisq.simulate'))
+  tabela <- do.call(rbind, resultados)
+  write.xlsx(as.data.frame(tabela), paste0(nome_arquivo, ".xlsx"), rowNames = TRUE)
+}
+gera_tabela_kruskal <- function(vars, indicador, nome_arquivo) {
+  resultados <- lapply(vars, function(v) KruskalTeste(dados21_ind_ubs[[v]], dados21_ind_ubs[[indicador]])$tabela)
+  tabela <- do.call(rbind, resultados)
+  write.xlsx(as.data.frame(tabela), paste0(nome_arquivo, ".xlsx"), rowNames = TRUE)
+}
+vars_chi <- c("Indicador_Panorama_cat","Indicador_TIC_cat",paste0("V35",1:8),paste0("V36",1:12),"v304","v305",paste0("V36",13:18),
+              paste0("V362",1:7),"V37",paste0("V37",11:16),"V372","V373",paste0("V374",1:11),"V325","porte_populacional")
+vars_kruskal <- c("PercLeitos","PercPlanosSaude","ivs","Gini","CoberturaESF")
+indicadores <- c("IndSaudeSexual_cat","IndPreNatal_cat","IndSaudeMulher_cat","IndSaudeCrianca_cat","IndHipertenso_cat",
+                 "IndDiabetico_cat","IndObesidade_cat","IndTuberculoseHanseniase_cat","IndSofrimentoPsi_cat","IndViolencia_cat",
+                 "IndIdosa_cat","IndSaudeHomem_cat","IndPessoasAcamadas_cat","IndAcoesVacinacao_cat","IndAtendimentoUrgEmerg_cat"
+                 #"IndAtendimentoProgDemandaEsp_cat","IndAtendimentoDemandaEsp_cat","IndIntegracaoAPS_cat",
+                 #"IndRegulacaoAssistencial_cat","IndCuidadoCompartilhado_cat"
+                 )
+for (i in seq_along(indicadores)) {
+  ind <- indicadores[i]
+  gera_tabela_chi(vars_chi, ind, paste0("Tabela ", 4 + (i - 1) * 2 + 1))
+  gera_tabela_kruskal(vars_kruskal, ind, paste0("Tabela ", 4 + (i - 1) * 2 + 2))
+}
+
 ####===============
 #### Modelos - TIC
 ####===============
@@ -1450,14 +1478,14 @@ mod_TIC_uni7 = lm(Indicador_TIC ~ Indicador_Panorama_cat, data = dados21_ind_ubs
 # write.xlsx(rbind(TabelaRegressaoLinear(mod_TIC_uni1),TabelaRegressaoLinear(mod_TIC_uni2),
 #                  TabelaRegressaoLinear(mod_TIC_uni3),TabelaRegressaoLinear(mod_TIC_uni4),
 #                  TabelaRegressaoLinear(mod_TIC_uni5),TabelaRegressaoLinear(mod_TIC_uni6),
-#                  TabelaRegressaoLinear(mod_TIC_uni7)) %>% as.data.frame(), "Tabela 5.xlsx", rowNames = F)
+#                  TabelaRegressaoLinear(mod_TIC_uni7)) %>% as.data.frame(), "Tabela 35.xlsx", rowNames = F)
 
 mod_TIC_multi = lm(Indicador_TIC ~ porte_populacional + PercLeitos + PercPlanosSaude + ivs + 
                      Gini + #CoberturaESF + 
                      Indicador_Panorama_cat, 
                    data = dados21_ind_ubs)
 summary(mod_TIC_multi)
-#write.xlsx(rbind(TabelaRegressaoLinear(mod_TIC_multi)) %>% as.data.frame(), "Tabela 5.1.xlsx", rowNames = F)
+#write.xlsx(rbind(TabelaRegressaoLinear(mod_TIC_multi)) %>% as.data.frame(), "Tabela 35.1.xlsx", rowNames = F)
 car::vif(mod_TIC_multi)
 
 mod_TIC_cat_uni1 = MASS::polr(Indicador_TIC_cat ~ porte_populacional, data = dados21_ind_ubs, Hess = TRUE)
@@ -1470,7 +1498,7 @@ mod_TIC_cat_uni7 = MASS::polr(Indicador_TIC_cat ~ Indicador_Panorama_cat, data =
 # write.xlsx(rbind(TabelaMultinomialOrdinal(mod_TIC_cat_uni1),TabelaMultinomialOrdinal(mod_TIC_cat_uni2),
 #                  TabelaMultinomialOrdinal(mod_TIC_cat_uni3),TabelaMultinomialOrdinal(mod_TIC_cat_uni4),
 #                  TabelaMultinomialOrdinal(mod_TIC_cat_uni5),TabelaMultinomialOrdinal(mod_TIC_cat_uni6),
-#                  TabelaMultinomialOrdinal(mod_TIC_cat_uni7)) %>% as.data.frame(), "Tabela 6.xlsx", rowNames = F)
+#                  TabelaMultinomialOrdinal(mod_TIC_cat_uni7)) %>% as.data.frame(), "Tabela 36.xlsx", rowNames = F)
 
 mod_TIC_cat_multi = MASS::polr(Indicador_TIC_cat ~ porte_populacional + PercLeitos + PercPlanosSaude +
                      ivs + Gini + #CoberturaESF + 
@@ -1481,7 +1509,7 @@ ctable = coef(summary(mod_TIC_cat_multi))
 p = pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
 ctable = cbind(ctable, "p value" = p)
 round(ctable %>% as.data.frame() %>% select('p value'),5)
-#write.xlsx(rbind(TabelaMultinomialOrdinal(mod_TIC_cat_multi)) %>% as.data.frame(), "Tabela 6.1.xlsx", rowNames = F)
+#write.xlsx(rbind(TabelaMultinomialOrdinal(mod_TIC_cat_multi)) %>% as.data.frame(), "Tabela 36.1.xlsx", rowNames = F)
 
 ####====================
 #### Modelos - Panorama
@@ -1500,14 +1528,14 @@ mod_Panorama_uni7 = lm(Indicador_Panorama ~ Indicador_TIC_cat, data = dados21_in
 # write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_uni1),TabelaRegressaoLinear(mod_Panorama_uni2),
 #                  TabelaRegressaoLinear(mod_Panorama_uni3),TabelaRegressaoLinear(mod_Panorama_uni4),
 #                  TabelaRegressaoLinear(mod_Panorama_uni5),TabelaRegressaoLinear(mod_Panorama_uni6),
-#                  TabelaRegressaoLinear(mod_Panorama_uni7)) %>% as.data.frame(), "Tabela 7.xlsx", rowNames = F)
+#                  TabelaRegressaoLinear(mod_Panorama_uni7)) %>% as.data.frame(), "Tabela 37.xlsx", rowNames = F)
 
 mod_Panorama_multi = lm(Indicador_Panorama ~ porte_populacional + PercLeitos + PercPlanosSaude + ivs + 
                      Gini + CoberturaESF + 
                        Indicador_TIC_cat, 
                    data = dados21_ind_ubs)
 summary(mod_Panorama_multi)
-# write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_multi)) %>% as.data.frame(), "Tabela 7.1.xlsx", rowNames = F)
+# write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_multi)) %>% as.data.frame(), "Tabela 37.1.xlsx", rowNames = F)
 car::vif(mod_Panorama_multi)
 
 mod_Panorama_cat_uni1 = MASS::polr(Indicador_Panorama_cat ~ porte_populacional, data = dados21_ind_ubs, Hess = TRUE)
@@ -1520,14 +1548,14 @@ mod_Panorama_cat_uni7 = MASS::polr(Indicador_Panorama_cat ~ Indicador_TIC_cat, d
 # write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_uni1),TabelaMultinomialOrdinal(mod_Panorama_cat_uni2),
 #                  TabelaMultinomialOrdinal(mod_Panorama_cat_uni3),TabelaMultinomialOrdinal(mod_Panorama_cat_uni4),
 #                  TabelaMultinomialOrdinal(mod_Panorama_cat_uni5),TabelaMultinomialOrdinal(mod_Panorama_cat_uni6),
-#                  TabelaMultinomialOrdinal(mod_Panorama_cat_uni7)) %>% as.data.frame(), "Tabela 8.xlsx", rowNames = F)
+#                  TabelaMultinomialOrdinal(mod_Panorama_cat_uni7)) %>% as.data.frame(), "Tabela 38.xlsx", rowNames = F)
 
 mod_Panorama_cat_multi = MASS::polr(Indicador_Panorama_cat ~ porte_populacional + PercLeitos + PercPlanosSaude +
                                       ivs + Gini + CoberturaESF + 
                                       Indicador_TIC_cat,
                                     data = dados21_ind_ubs, Hess = TRUE)
 summary(mod_Panorama_cat_multi)
-#write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_multi)) %>% as.data.frame(), "Tabela 8.1.xlsx", rowNames = F)
+#write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_multi)) %>% as.data.frame(), "Tabela 38.1.xlsx", rowNames = F)
 
 
 ####========================================
