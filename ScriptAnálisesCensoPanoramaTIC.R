@@ -5,7 +5,7 @@
 #### Preparando o R para análise
 ####=============================
 rm(list=ls(all=T))#Limpar ambiente/histórico
-tryCatch({setwd("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/censo")},
+tryCatch({setwd("C:/Users/cesar_macieira/Desktop/Projetos/Nescon/censo")},
          error = function(e) { setwd("D:/NESCON/Trabalho - Censo/censo") })
 
 ####=================================
@@ -350,26 +350,26 @@ TesteDeNormalidade = function(x){
 ####=============================
 #### Carregando o banco de dados 
 ####=============================
-dados_originais = tryCatch({arrow::read_parquet("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/censo/44938_censo2024 06_08_25.parquet")},
+dados_originais = tryCatch({arrow::read_parquet("C:/Users/cesar_macieira/Desktop/Projetos/Nescon/censo/44938_censo2024 06_08_25.parquet")},
                            error = function(e) {arrow::read_parquet("D:/NESCON/Trabalho - Censo/censo/44938_censo2024 06_08_25.parquet")})
 #write.xlsx(dados %>% as.data.frame(), 'dados Censo 07-08-2025.xlsx')
 dados_originais = dados_originais %>% filter(V362 != '.')
 
-dados_rm = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/censo/Variáveis de interesse - Sem IPEA.xlsx", sheet = 2)},
+dados_rm = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Projetos/Nescon/censo/Variáveis de interesse - Sem IPEA.xlsx", sheet = 2)},
                  error = function(e) {read.xlsx("D:/NESCON/Trabalho - Censo/censo/Variáveis de interesse - Sem IPEA.xlsx", sheet = 2)}) %>% 
   distinct(.keep_all = TRUE)
 
-cob_esf = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/censo/Cobertura ESF.xlsx", sheet = 1)},
+cob_esf = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Projetos/Nescon/censo/Cobertura ESF.xlsx", sheet = 1)},
                     error = function(e) {read.xlsx("D:/NESCON/Trabalho - Censo/censo/Cobertura ESF.xlsx", sheet = 1)}) 
-leitos = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/censo/Número de leitos.xlsx", sheet = 1)},
+leitos = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Projetos/Nescon/censo/Número de leitos.xlsx", sheet = 1)},
                   error = function(e) {read.xlsx("D:/NESCON/Trabalho - Censo/censo/Número de leitos.xlsx", sheet = 1)}) 
-planos_saude = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/censo/Planos de saúde.xlsx", sheet = 1)},
+planos_saude = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Projetos/Nescon/censo/Planos de saúde.xlsx", sheet = 1)},
                         error = function(e) {read.xlsx("D:/NESCON/Trabalho - Censo/censo/Planos de saúde.xlsx", sheet = 1)}) 
-populacao = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/censo/População.xlsx", sheet = 1)},
+populacao = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Projetos/Nescon/censo/População.xlsx", sheet = 1)},
                      error = function(e) {read.xlsx("D:/NESCON/Trabalho - Censo/censo/População.xlsx", sheet = 1)}) 
-ivs = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/censo/IVS.xlsx", sheet = 1)},
+ivs = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Projetos/Nescon/censo/IVS.xlsx", sheet = 1)},
                error = function(e) {read.xlsx("D:/NESCON/Trabalho - Censo/censo/IVS.xlsx", sheet = 1)}) 
-gini = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/censo/Gini.xlsx", sheet = 1)},
+gini = tryCatch({read.xlsx("C:/Users/cesar_macieira/Desktop/Projetos/Nescon/censo/Gini.xlsx", sheet = 1)},
                error = function(e) {read.xlsx("D:/NESCON/Trabalho - Censo/censo/Gini.xlsx", sheet = 1)}) 
 
 ####=====================
@@ -518,16 +518,16 @@ df2$V323cat = factor(case_when( (df2$V86cat == "0 a 3") & (df2$V323 == 0) ~ 'Pé
                                   (df2$V86cat == "28 ou mais") & (df2$V323 >= 25) ~ 'Ótimo'), c('Péssimo','Ruim','Regular','Bom','Ótimo'))
 
 df2 = df2 %>% mutate(V2537_num = case_when(V2537 == 'Não' ~ 0,V2537 == 'Sim' ~ 1),
-                         V2577_num = case_when(V2567 == 'Não' ~ 0,V2567 == 'Sim' ~ 1),
-                         V2537_V2567 = rowSums(across(c(V2537_num, V2577_num)), na.rm = TRUE),
-                         V2537_V2567_num = ifelse(V2537_V2567 >= 1, 1, 0),
-                         V2564_num = case_when(V2564 == 'Não' ~ 0,V2564 == 'Sim' ~ 1),
-                         V2565_num = case_when(V2565 == 'Não' ~ 0,V2565 == 'Sim' ~ 1),
-                         V2537_V2567_V2564_V2565 = rowSums(across(c(V2537_V2567_num, V2564_num,V2565_num)), na.rm = TRUE),
-                         V2537_V2567_V2564_V2565_cat = factor(case_when(V2537_V2567_V2564_V2565 == 0 ~ 'Péssimo/Ruim',
-                                                                        V2537_V2567_V2564_V2565 == 1 ~ 'Regular',
-                                                                        V2537_V2567_V2564_V2565 == 2 ~ 'Bom',
-                                                                        V2537_V2567_V2564_V2565 == 3 ~ 'Ótimo'),c('Péssimo/Ruim','Regular','Bom','Ótimo')))
+                     V2577_num = case_when(V2567 == 'Não' ~ 0,V2567 == 'Sim' ~ 1),
+                     V2537_V2567 = rowSums(across(c(V2537_num, V2577_num)), na.rm = TRUE),
+                     V2537_V2567_num = ifelse(V2537_V2567 >= 1, 1, 0),
+                     V2564_num = case_when(V2564 == 'Não' ~ 0,V2564 == 'Sim' ~ 1),
+                     V2565_num = case_when(V2565 == 'Não' ~ 0,V2565 == 'Sim' ~ 1),
+                     V2537_V2567_V2564_V2565 = rowSums(across(c(V2537_V2567_num, V2564_num,V2565_num)), na.rm = TRUE),
+                     V2537_V2567_V2564_V2565_cat = factor(case_when(V2537_V2567_V2564_V2565 == 0 ~ 'Péssimo/Ruim',
+                                                                    V2537_V2567_V2564_V2565 == 1 ~ 'Regular',
+                                                                    V2537_V2567_V2564_V2565 == 2 ~ 'Bom',
+                                                                    V2537_V2567_V2564_V2565 == 3 ~ 'Ótimo'),c('Péssimo/Ruim','Regular','Bom','Ótimo')))
 
 df2 = df2 %>% mutate(
   V341_num = case_when(V341 == 'Não' ~ 0, V341 == 'Sim' ~ 2),
@@ -545,16 +545,16 @@ df2 = df2 %>% mutate(
                                  V34_num >= 9 ~ 'Ótimo'), levels = c('Péssimo', 'Ruim', 'Regular', 'Bom', 'Ótimo')))
 
 df2 = df2 %>% mutate(V361_num = case_when(V361 == 'Não' ~ 0,V361 == 'Sim' ~ 1),
-                         V364_num = case_when(V364 == 'Não' ~ 0,V364 == 'Sim' ~ 1),
-                         V361_V364 = rowSums(across(c(V361_num, V364_num)), na.rm = TRUE))
+                     V364_num = case_when(V364 == 'Não' ~ 0,V364 == 'Sim' ~ 1),
+                     V361_V364 = rowSums(across(c(V361_num, V364_num)), na.rm = TRUE))
 
 df2 = df2 %>% mutate(V3711_num = case_when(V3711 == 'Não' ~ 0,V3711 == 'Sim' ~ 2),
-                         V3712_num = case_when(V3712 == 'Não' ~ 0,V3712 == 'Sim' ~ 1),
-                         V3713_num = case_when(V3713 == 'Não' ~ 0,V3713 == 'Sim' ~ 1),
-                         V3714_num = case_when(V3714 == 'Não' ~ 0,V3714 == 'Sim' ~ 1),
-                         V3715_num = case_when(V3715 == 'Não' ~ 0,V3715 == 'Sim' ~ 1),
-                         V3716_num = case_when(V3716 == 'Não' ~ 0,V3716 == 'Sim' ~ 1),
-                         V3711_V3712_V3713_V3714_V3715_V3716 = rowSums(across(c(V3711_num,V3712_num,V3713_num,V3714_num,V3715_num,V3716_num)), na.rm = TRUE))
+                     V3712_num = case_when(V3712 == 'Não' ~ 0,V3712 == 'Sim' ~ 1),
+                     V3713_num = case_when(V3713 == 'Não' ~ 0,V3713 == 'Sim' ~ 1),
+                     V3714_num = case_when(V3714 == 'Não' ~ 0,V3714 == 'Sim' ~ 1),
+                     V3715_num = case_when(V3715 == 'Não' ~ 0,V3715 == 'Sim' ~ 1),
+                     V3716_num = case_when(V3716 == 'Não' ~ 0,V3716 == 'Sim' ~ 1),
+                     V3711_V3712_V3713_V3714_V3715_V3716 = rowSums(across(c(V3711_num,V3712_num,V3713_num,V3714_num,V3715_num,V3716_num)), na.rm = TRUE))
 df2$V3711_V3712_V3713_V3714_V3715_V3716cat = ifelse((df2$V37 == 'Não' & df2$V3711_V3712_V3713_V3714_V3715_V3716 != 0), 0, df2$V3711_V3712_V3713_V3714_V3715_V3716)
 df2$V3711_V3712_V3713_V3714_V3715_V3716cat5 = 
   factor(case_when(df2$V3711_V3712_V3713_V3714_V3715_V3716 == 0 ~ 'Péssimo',
@@ -602,25 +602,25 @@ df2 = df2 %>% mutate(V911_num = case_when(V911 == 'Não' ~ 0,V911 == 'Sim' ~ 1),
                                                         V91_num >= 12 ~ 'Ótimo'), levels = c('Péssimo', 'Ruim', 'Regular', 'Bom', 'Ótimo')))
 
 df2 = df2 %>% mutate(V1031_num = case_when(V1031 == 'Não' ~ 0,V1031 == 'Sim' ~ 1),
-                         V1032_num = case_when(V1032 == 'Não' ~ 0,V1032 == 'Sim' ~ 1),
-                         V1033_num = case_when(V1033 == 'Não' ~ 0,V1033 == 'Sim' ~ 2),
-                         V1034_num = case_when(V1034 == 'Não' ~ 0,V1034 == 'Sim' ~ 2),
-                         V1035_num = case_when(v1035 == 'Não' ~ 0,v1035 == 'Sim' ~ 2),
-                         V1036_num = case_when(v1036 == 'Não' ~ 0,v1036 == 'Sim' ~ 2),
-                         V1037_num = case_when(v1037 == 'Não' ~ 0,v1037 == 'Sim' ~ 1), 
-                         V103_num = rowSums(across(c(V1031_num,V1032_num,V1033_num,V1034_num,V1035_num,V1036_num,V1037_num)), na.rm = TRUE),
-                         V103_num_imp = ifelse(is.na(V103_num) == TRUE, 0, V103_num),
-                         V103_num_cat = factor(case_when(V103_num_imp <= 1 ~ 'Péssimo',
-                                                         V103_num_imp >= 2 & V103_num_imp <= 3 ~ 'Ruim',
-                                                         V103_num_imp >= 4 & V103_num_imp <= 6 ~ 'Regular',
-                                                         V103_num_imp >= 7 & V103_num_imp <= 8 ~ 'Bom',
-                                                         V103_num_imp >= 9 ~ 'Ótimo'), levels = c('Péssimo', 'Ruim', 'Regular', 'Bom', 'Ótimo')))
+                     V1032_num = case_when(V1032 == 'Não' ~ 0,V1032 == 'Sim' ~ 1),
+                     V1033_num = case_when(V1033 == 'Não' ~ 0,V1033 == 'Sim' ~ 2),
+                     V1034_num = case_when(V1034 == 'Não' ~ 0,V1034 == 'Sim' ~ 2),
+                     V1035_num = case_when(v1035 == 'Não' ~ 0,v1035 == 'Sim' ~ 2),
+                     V1036_num = case_when(v1036 == 'Não' ~ 0,v1036 == 'Sim' ~ 2),
+                     V1037_num = case_when(v1037 == 'Não' ~ 0,v1037 == 'Sim' ~ 1), 
+                     V103_num = rowSums(across(c(V1031_num,V1032_num,V1033_num,V1034_num,V1035_num,V1036_num,V1037_num)), na.rm = TRUE),
+                     V103_num_imp = ifelse(is.na(V103_num) == TRUE, 0, V103_num),
+                     V103_num_cat = factor(case_when(V103_num_imp <= 1 ~ 'Péssimo',
+                                                     V103_num_imp >= 2 & V103_num_imp <= 3 ~ 'Ruim',
+                                                     V103_num_imp >= 4 & V103_num_imp <= 6 ~ 'Regular',
+                                                     V103_num_imp >= 7 & V103_num_imp <= 8 ~ 'Bom',
+                                                     V103_num_imp >= 9 ~ 'Ótimo'), levels = c('Péssimo', 'Ruim', 'Regular', 'Bom', 'Ótimo')))
 
 df2 = df2 %>% mutate(v1063_num = case_when(v1063 == 'Não' ~ 0,v1063 == 'Sim' ~ 1),
-                         v1064_num = case_when(v1064 == 'Não' ~ 0,v1064 == 'Sim' ~ 1),
-                         v1065_num = case_when(v1065 == 'Não' ~ 0,v1065 == 'Sim' ~ 1),
-                         v1066_num = case_when(v1066 == 'Não' ~ 0,v1066 == 'Sim' ~ 1),
-                         v1065_v1064_v1065_v1066 = rowSums(across(c(v1063_num,v1064_num,v1065_num,v1066_num)), na.rm = TRUE))
+                     v1064_num = case_when(v1064 == 'Não' ~ 0,v1064 == 'Sim' ~ 1),
+                     v1065_num = case_when(v1065 == 'Não' ~ 0,v1065 == 'Sim' ~ 1),
+                     v1066_num = case_when(v1066 == 'Não' ~ 0,v1066 == 'Sim' ~ 1),
+                     v1065_v1064_v1065_v1066 = rowSums(across(c(v1063_num,v1064_num,v1065_num,v1066_num)), na.rm = TRUE))
 df2$v1065_v1064_v1065_v1066cat = 
   factor(case_when(df2$v1065_v1064_v1065_v1066 == 0 ~ 'Péssimo/Ruim',
                    df2$v1065_v1064_v1065_v1066 == 1 ~ 'Regular',
@@ -630,13 +630,13 @@ df2$v1065_v1064_v1065_v1066cat =
 df2$v12026_cat = ifelse(df2$v120 == 'Não', 'Não', df2$v12026)
 df2$v12026_cat_imp = ifelse(is.na(df2$v12026_cat) == TRUE, 'Não', df2$v12026_cat)
 df2 = df2 %>% mutate(v1263_num = case_when(v1263 == 'Não' ~ 0,v1263 == 'Sim' ~ 1),
-                         v1264_num = case_when(v1264 == 'Não' ~ 0,v1264 == 'Sim' ~ 1),
-                         v1265_num = case_when(v1263 == 'Não' ~ 0,v1265 == 'Sim' ~ 1),
-                         v1266_num = case_when(v1263 == 'Não' ~ 0,v1266 == 'Sim' ~ 1),
-                         v1267_num = case_when(v1264 == 'Não' ~ 0,v1267 == 'Sim' ~ 1),
-                         v1268_num = case_when(v1263 == 'Não' ~ 0,v1268 == 'Sim' ~ 1),
-                         v1269_num = case_when(v1263 == 'Não' ~ 0,v1269 == 'Sim' ~ 1),
-                         v126_num = rowSums(across(c(v1263_num,v1264_num,v1265_num,v1266_num,v1267_num,v1268_num,v1269_num)), na.rm = TRUE))
+                     v1264_num = case_when(v1264 == 'Não' ~ 0,v1264 == 'Sim' ~ 1),
+                     v1265_num = case_when(v1263 == 'Não' ~ 0,v1265 == 'Sim' ~ 1),
+                     v1266_num = case_when(v1263 == 'Não' ~ 0,v1266 == 'Sim' ~ 1),
+                     v1267_num = case_when(v1264 == 'Não' ~ 0,v1267 == 'Sim' ~ 1),
+                     v1268_num = case_when(v1263 == 'Não' ~ 0,v1268 == 'Sim' ~ 1),
+                     v1269_num = case_when(v1263 == 'Não' ~ 0,v1269 == 'Sim' ~ 1),
+                     v126_num = rowSums(across(c(v1263_num,v1264_num,v1265_num,v1266_num,v1267_num,v1268_num,v1269_num)), na.rm = TRUE))
 df2$v126_cat = 
   factor(case_when(df2$v126_num == 0 | df2$v12616 == 'Sim' ~ 'Péssimo',
                    df2$v126_num == 1 | df2$v126_num == 2 ~ 'Ruim',
@@ -644,8 +644,8 @@ df2$v126_cat =
                    df2$v126_num == 5 | df2$v126_num == 6 ~ 'Bom',
                    df2$v126_num >= 7 ~ 'Ótimo'), c('Péssimo','Ruim','Regular','Bom','Ótimo'))
 df2$V33 = factor(df2$V33, c('Não tem acesso à internet',
-                                'Possui acesso à Internet, mas funciona de maneira inadequada (quedas e instabilidades frequentes)',
-                                'Possui acesso à Internet adequado para a execução das atividades'))
+                            'Possui acesso à Internet, mas funciona de maneira inadequada (quedas e instabilidades frequentes)',
+                            'Possui acesso à Internet adequado para a execução das atividades'))
 
 numerico = function(x){
   return(case_when(x == 'Péssimo' ~ 1,
@@ -656,42 +656,42 @@ numerico = function(x){
 }
 
 df2 = df2 %>% mutate(V321cat_num = numerico(V321cat),
-                         V325cat_num = case_when(V325cat == 'Ausente' ~ 1, V325cat == 'Presente' ~ 5),
-                         V324cat_num = case_when(V324cat == 'Ausente' ~ 1, V324cat == 'Presente' ~ 5),
-                         V323cat_num = numerico(V323cat),
-                         V2537_V2567_V2564_V2565_cat_num = case_when(V2537_V2567_V2564_V2565_cat == 'Péssimo/Ruim' ~ 1,
-                                                                     V2537_V2567_V2564_V2565_cat == 'Regular' ~ 3,
-                                                                     V2537_V2567_V2564_V2565_cat == 'Bom' ~ 4,
-                                                                     V2537_V2567_V2564_V2565_cat == 'Ótimo' ~ 5),
-                         V34_cat_num = numerico(V34_num_cat),
-                         V358_num = case_when(V358 == 'Não' ~ 1, V358 == 'Sim' ~ 5),
-                         V361_V364_num = case_when(V361_V364 == 2 ~ 5, V361_V364 == 1 ~ 3, V361_V364 == 0 ~ 1),
-                         V37_num = case_when(V37 == 'Não' ~ 1, V37 == 'Sim' ~ 5),
-                         V3711_V3712_V3713_V3714_V3715_V3716cat5_num = numerico(V3711_V3712_V3713_V3714_V3715_V3716cat5),
-                         V374_cat5_num = case_when(V374_cat5 == 'Péssimo/Ruim' ~ 1,
-                                                   V374_cat5 == 'Regular' ~ 3,
-                                                   V374_cat5 == 'Bom' ~ 4,
-                                                   V374_cat5 == 'Ótimo' ~ 5),
-                         V91cat_num = numerico(V91_num_cat),
-                         V103cat_num = numerico(V103_num_cat), 
-                         v1065_v1064_v1065_v1066cat_num = case_when(v1065_v1064_v1065_v1066cat == 'Péssimo/Ruim' ~ 1,
-                                                                    v1065_v1064_v1065_v1066cat == 'Regular' ~ 3,
-                                                                    v1065_v1064_v1065_v1066cat == 'Bom' ~ 4,
-                                                                    v1065_v1064_v1065_v1066cat == 'Ótimo' ~ 5),
-                         v12026_num =  case_when(v12026_cat_imp == 'Não' ~ 1, v12026_cat_imp == 'Sim' ~ 5),
-                         v126_cat_num = numerico(v126_cat),
-                         V33_num = case_when(V33 == 'Possui acesso à Internet adequado para a execução das atividades' ~ 5,
-                                             V33 == 'Possui acesso à Internet, mas funciona de maneira inadequada (quedas e instabilidades frequentes)' ~ 3,
-                                             V33 == 'Não tem acesso à internet' ~ 1),
-                         Indicador_TIC = rowSums(across(c(V321cat_num,V325cat_num,V324cat_num,V323cat_num,V2537_V2567_V2564_V2565_cat_num,
+                     V325cat_num = case_when(V325cat == 'Ausente' ~ 1, V325cat == 'Presente' ~ 5),
+                     V324cat_num = case_when(V324cat == 'Ausente' ~ 1, V324cat == 'Presente' ~ 5),
+                     V323cat_num = numerico(V323cat),
+                     V2537_V2567_V2564_V2565_cat_num = case_when(V2537_V2567_V2564_V2565_cat == 'Péssimo/Ruim' ~ 1,
+                                                                 V2537_V2567_V2564_V2565_cat == 'Regular' ~ 3,
+                                                                 V2537_V2567_V2564_V2565_cat == 'Bom' ~ 4,
+                                                                 V2537_V2567_V2564_V2565_cat == 'Ótimo' ~ 5),
+                     V34_cat_num = numerico(V34_num_cat),
+                     V358_num = case_when(V358 == 'Não' ~ 1, V358 == 'Sim' ~ 5),
+                     V361_V364_num = case_when(V361_V364 == 2 ~ 5, V361_V364 == 1 ~ 3, V361_V364 == 0 ~ 1),
+                     V37_num = case_when(V37 == 'Não' ~ 1, V37 == 'Sim' ~ 5),
+                     V3711_V3712_V3713_V3714_V3715_V3716cat5_num = numerico(V3711_V3712_V3713_V3714_V3715_V3716cat5),
+                     V374_cat5_num = case_when(V374_cat5 == 'Péssimo/Ruim' ~ 1,
+                                               V374_cat5 == 'Regular' ~ 3,
+                                               V374_cat5 == 'Bom' ~ 4,
+                                               V374_cat5 == 'Ótimo' ~ 5),
+                     V91cat_num = numerico(V91_num_cat),
+                     V103cat_num = numerico(V103_num_cat), 
+                     v1065_v1064_v1065_v1066cat_num = case_when(v1065_v1064_v1065_v1066cat == 'Péssimo/Ruim' ~ 1,
+                                                                v1065_v1064_v1065_v1066cat == 'Regular' ~ 3,
+                                                                v1065_v1064_v1065_v1066cat == 'Bom' ~ 4,
+                                                                v1065_v1064_v1065_v1066cat == 'Ótimo' ~ 5),
+                     v12026_num =  case_when(v12026_cat_imp == 'Não' ~ 1, v12026_cat_imp == 'Sim' ~ 5),
+                     v126_cat_num = numerico(v126_cat),
+                     V33_num = case_when(V33 == 'Possui acesso à Internet adequado para a execução das atividades' ~ 5,
+                                         V33 == 'Possui acesso à Internet, mas funciona de maneira inadequada (quedas e instabilidades frequentes)' ~ 3,
+                                         V33 == 'Não tem acesso à internet' ~ 1),
+                     Indicador_TIC = rowSums(across(c(V321cat_num,V325cat_num,V324cat_num,V323cat_num,V2537_V2567_V2564_V2565_cat_num,
                                                       V34_cat_num,V358_num,V361_V364_num,V37_num,V3711_V3712_V3713_V3714_V3715_V3716cat5_num,V374_cat5_num,
                                                       V91cat_num,V103cat_num,v1065_v1064_v1065_v1066cat_num,v12026_num,v126_cat_num,V33_num)), na.rm = TRUE),
-                         Indicador_TIC_cat = factor(case_when(Indicador_TIC <= 25 ~ 'Péssimo',
+                     Indicador_TIC_cat = factor(case_when(Indicador_TIC <= 25 ~ 'Péssimo',
                                                           Indicador_TIC > 25 & Indicador_TIC <= 35 ~ 'Ruim',
                                                           Indicador_TIC > 35 & Indicador_TIC <= 45 ~ 'Regular',
                                                           Indicador_TIC > 45 & Indicador_TIC <= 60 ~ 'Bom',
                                                           Indicador_TIC > 60 ~ 'Ótimo'), c('Péssimo','Ruim','Regular','Bom','Ótimo')
-                         )
+                     )
 )
 
 df2$V323_bin = ifelse(df2$V323 > 0, 1, df2$V323)
@@ -710,6 +710,9 @@ criar_indicador = function(df, variaveis, nome_indicador) {
 
 df2$porte_populacional = factor(df2$porte_populacional,
                                 c("Pequeno Porte I","Pequeno Porte II","Médio Porte","Grande Porte","Metrópole"))
+
+df2 = df2 %>% mutate(V7esf_mod = case_when(V7esfnum2 == 0 ~ 'Não tem modelo assitencial PSF',
+                                           V7esfnum2 > 0 ~ 'Tem modelo assitencial PSF'))
 
 ####===============================
 #### Junção com dados demográficos
@@ -1247,81 +1250,223 @@ dados21_ind_ubs$Indicador_Panorama_cat = factor(case_when(
   dados21_ind_ubs$Indicador_Panorama > 262.74 ~ "Ótimo"), c("Péssimo","Ruim","Regular","Bom","Ótimo"))
 #write.xlsx(dados21_ind_ubs %>% as.data.frame(),'Dados com indicadores categorizados agrupados por ubs.xlsx')
 
-####=============================
-#### Comparações TIC  e Panorama
-####=============================
+####============================
+#### Comparações TIC e Panorama
+####============================
 DescritivaCat(dados21_ind_ubs$Indicador_TIC_cat)
 # write.xlsx(DescritivaCat(dados21_ind_ubs$Indicador_TIC) %>% as.data.frame(), 'Tabela 18.xlsx', rowNames = T)
 # write.xlsx(DescritivaCat(dados21_ind_ubs$Indicador_TIC_cat) %>% as.data.frame(), 'Tabela 19.xlsx', rowNames = T)
 
 #write.xlsx(dados21_ind_ubs %>% as.data.frame(),'Dados censo com indicadores UBS.xlsx')
 
+TesteDeNormalidade(dados21_ind_ubs$Indicador_Panorama)
+TesteDeNormalidade(dados21_ind_ubs$Indicador_TIC)
+
+Tabela0 = 
+  rbind(KruskalTeste(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$Indicador_TIC_cat)$tabela,
+        
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V351),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V352),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V353),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V354),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V355),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V356),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V357),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V358),
+        
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V361),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V362),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V363),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V364),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V365),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V366),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V367),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V368),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V369),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3610),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3611),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3612),
+        
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$v304),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$v305),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3613),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3614),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3615),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3616),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3617),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3618),
+        
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3621),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3622),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3623),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3624),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3625),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3626),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3627),
+        
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V37),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3711),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3712),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3713),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3714),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3715),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3716),
+        
+        KruskalTeste(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V372)$tabela,
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V373),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3741),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3742),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3743),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3744),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3745),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3746),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3747),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3748),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V3749),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V37410),
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V37411),
+        KruskalTeste(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V325)$tabela,
+        
+        KruskalTeste(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$porte_populacional)$tabela,
+        MannWhitney(dados21_ind_ubs$Indicador_Panorama,dados21_ind_ubs$V7esf_mod))
+#write.xlsx(Tabela0 %>% as.data.frame(), 'Tabela 0.xlsx', rowNames = T)
+
+Tabela0.1 = 
+  rbind(KruskalTeste(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$Indicador_TIC_cat)$tabela,
+        
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V351),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V352),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V353),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V354),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V355),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V356),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V357),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V358),
+        
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V361),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V362),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V363),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V364),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V365),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V366),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V367),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V368),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V369),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3610),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3611),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3612),
+        
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$v304),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$v305),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3613),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3614),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3615),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3616),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3617),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3618),
+        
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3621),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3622),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3623),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3624),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3625),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3626),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3627),
+        
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V37),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3711),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3712),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3713),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3714),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3715),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3716),
+        
+        KruskalTeste(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V372)$tabela,
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V373),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3741),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3742),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3743),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3744),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3745),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3746),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3747),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3748),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V3749),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V37410),
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V37411),
+        KruskalTeste(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V325)$tabela,
+        
+        KruskalTeste(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$porte_populacional)$tabela,
+        MannWhitney(dados21_ind_ubs$Indicador_TIC,dados21_ind_ubs$V7esf_mod))
+#write.xlsx(Tabela0.1 %>% as.data.frame(), 'Tabela 0.1.xlsx', rowNames = T)
+
 Tabela1 = rbind(
-  QuiQuadrado_Fisher(dados21_ind_ubs$Indicador_TIC_cat,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$Indicador_TIC_cat,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V351,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V352,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V353,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V354,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V355,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V356,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V357,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V358,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V351,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V352,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V353,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V354,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V355,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V356,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V357,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V358,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V361,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V362,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V363,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V364,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V365,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V366,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V367,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V368,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V369,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3610,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3611,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3612,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V361,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V362,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V363,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V364,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V365,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V366,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V367,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V368,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V369,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3610,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3611,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3612,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$v304,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$v305,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3613,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3614,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3615,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3616,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3617,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3618,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$v304,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$v305,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3613,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3614,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3615,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3616,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3617,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3618,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3621,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3622,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3623,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3624,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3625,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3626,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3627,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3621,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3622,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3623,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3624,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3625,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3626,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3627,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V37,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3711,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3712,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3713,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3714,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3715,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3716,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3711,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3712,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3713,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3714,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3715,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3716,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V372,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V373,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3741,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3742,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3743,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3744,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3745,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3746,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3747,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3748,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3749,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V37410,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V37411,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V325,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V372,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V373,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3741,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3742,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3743,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3744,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3745,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3746,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3747,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3748,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3749,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37410,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37411,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V325,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$porte_populacional,dados21_ind_ubs$Indicador_Panorama_cat,'1','chisq')
+  QuiQuadrado_Fisher(dados21_ind_ubs$porte_populacional,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V7esf_mod,dados21_ind_ubs$Indicador_Panorama_cat,'2','chisq')
   )
 #write.xlsx(Tabela1 %>% as.data.frame(), 'Tabela 1.xlsx', rowNames = T)
 
@@ -1335,72 +1480,80 @@ Tabela2 = rbind(KruskalTeste(dados21_ind_ubs$PercLeitos,dados21_ind_ubs$Indicado
                 KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$Indicador_Panorama_cat)$tabela)
 #write.xlsx(Tabela2 %>% as.data.frame(), 'Tabela 2.xlsx', rowNames = T)
 
+Tabela2.1 = rbind(KruskalTeste(dados21_ind_ubs$PercLeitos,dados21_ind_ubs$Indicador_Panorama_cat)$C.Multiplas,
+                KruskalTeste(dados21_ind_ubs$PercPlanosSaude,dados21_ind_ubs$Indicador_Panorama_cat)$C.Multiplas,
+                KruskalTeste(dados21_ind_ubs$ivs,dados21_ind_ubs$Indicador_Panorama_cat)$C.Multiplas,
+                KruskalTeste(dados21_ind_ubs$Gini,dados21_ind_ubs$Indicador_Panorama_cat)$C.Multiplas,
+                KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$Indicador_Panorama_cat)$C.Multiplas)
+#write.xlsx(Tabela2.1 %>% as.data.frame(), 'Tabela 2.1.xlsx', rowNames = T)
+
 Tabela3 = rbind(
-  QuiQuadrado_Fisher(dados21_ind_ubs$Indicador_Panorama_cat,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$Indicador_Panorama_cat,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V351,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V352,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V353,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V354,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V355,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V356,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V357,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V358,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V351,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V352,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V353,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V354,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V355,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V356,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V357,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V358,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V361,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V362,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V363,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V364,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V365,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V366,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V367,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V368,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V369,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3610,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3611,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3612,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V361,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V362,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V363,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V364,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V365,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V366,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V367,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V368,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V369,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3610,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3611,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3612,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$v304,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$v305,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3613,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3614,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3615,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3616,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3617,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3618,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$v304,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$v305,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3613,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3614,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3615,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3616,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3617,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3618,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3621,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3622,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3623,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3624,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3625,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3626,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3627,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3621,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3622,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3623,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3624,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3625,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3626,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3627,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V37,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3711,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3712,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3713,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3714,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3715,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3716,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3711,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3712,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3713,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3714,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3715,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3716,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$V372,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V373,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3741,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3742,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3743,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3744,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3745,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3746,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3747,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3748,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V3749,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V37410,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V37411,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
-  QuiQuadrado_Fisher(dados21_ind_ubs$V325,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V372,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V373,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3741,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3742,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3743,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3744,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3745,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3746,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3747,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3748,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V3749,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37410,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V37411,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V325,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
   
-  QuiQuadrado_Fisher(dados21_ind_ubs$porte_populacional,dados21_ind_ubs$Indicador_TIC_cat,'1','chisq')
+  QuiQuadrado_Fisher(dados21_ind_ubs$porte_populacional,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq'),
+  QuiQuadrado_Fisher(dados21_ind_ubs$V7esf_mod,dados21_ind_ubs$Indicador_TIC_cat,'2','chisq')
 )
 #write.xlsx(Tabela3 %>% as.data.frame(), 'Tabela 3.xlsx', rowNames = T)
 
@@ -1411,37 +1564,70 @@ Tabela4 = rbind(KruskalTeste(dados21_ind_ubs$PercLeitos,dados21_ind_ubs$Indicado
                 KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$Indicador_TIC_cat)$tabela)
 #write.xlsx(Tabela4 %>% as.data.frame(), 'Tabela 4.xlsx', rowNames = T)
 
-####=============================
-#### Comparações TIC  e Panorama
-####=============================
-gera_tabela_chi <- function(vars, indicador, nome_arquivo) {
-  resultados <- lapply(vars, function(v) QuiQuadrado_Fisher(dados21_ind_ubs[[v]], dados21_ind_ubs[[indicador]], '1', 'chisq.simulate'))
-  tabela <- do.call(rbind, resultados)
+Tabela4.1 = rbind(KruskalTeste(dados21_ind_ubs$PercLeitos,dados21_ind_ubs$Indicador_TIC_cat)$C.Multiplas,
+                KruskalTeste(dados21_ind_ubs$PercPlanosSaude,dados21_ind_ubs$Indicador_TIC_cat)$C.Multiplas,
+                KruskalTeste(dados21_ind_ubs$ivs,dados21_ind_ubs$Indicador_TIC_cat)$C.Multiplas,
+                KruskalTeste(dados21_ind_ubs$Gini,dados21_ind_ubs$Indicador_TIC_cat)$C.Multiplas,
+                KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$Indicador_TIC_cat)$C.Multiplas)
+#write.xlsx(Tabela4.1 %>% as.data.frame(), 'Tabela 4.1.xlsx', rowNames = T)
+
+####=========================
+#### Comparações Indicadores
+####=========================
+gera_tabela_chi = function(vars, indicador, nome_arquivo) {
+  resultados = lapply(vars, function(v) QuiQuadrado_Fisher(dados21_ind_ubs[[v]], dados21_ind_ubs[[indicador]], '2', 'chisq'))
+  tabela = do.call(rbind, resultados)
   write.xlsx(as.data.frame(tabela), paste0(nome_arquivo, ".xlsx"), rowNames = TRUE)
 }
-gera_tabela_kruskal <- function(vars, indicador, nome_arquivo) {
-  resultados <- lapply(vars, function(v) KruskalTeste(dados21_ind_ubs[[v]], dados21_ind_ubs[[indicador]])$tabela)
-  tabela <- do.call(rbind, resultados)
-  write.xlsx(as.data.frame(tabela), paste0(nome_arquivo, ".xlsx"), rowNames = TRUE)
+gera_tabela_kruskal = function(vars, indicador, nome_arquivo) {
+  resultados = lapply(vars, function(v) KruskalTeste(dados21_ind_ubs[[v]], dados21_ind_ubs[[indicador]])$tabela)
+  tabela = do.call(rbind, resultados)
+  #write.xlsx(as.data.frame(tabela), paste0(nome_arquivo, ".xlsx"), rowNames = TRUE)
 }
-vars_chi <- c("Indicador_Panorama_cat","Indicador_TIC_cat",paste0("V35",1:8),paste0("V36",1:12),"v304","v305",paste0("V36",13:18),
-              paste0("V362",1:7),"V37",paste0("V37",11:16),"V372","V373",paste0("V374",1:11),"V325","porte_populacional")
-vars_kruskal <- c("PercLeitos","PercPlanosSaude","ivs","Gini","CoberturaESF")
-indicadores <- c("IndSaudeSexual_cat","IndPreNatal_cat","IndSaudeMulher_cat","IndSaudeCrianca_cat","IndHipertenso_cat",
+gera_tabela_kruskal_cm = function(vars, indicador, nome_arquivo) {
+  resultados = lapply(vars, function(v) KruskalTeste(dados21_ind_ubs[[v]], dados21_ind_ubs[[indicador]])$C.Multiplas)
+  tabela = do.call(rbind, resultados)
+  #write.xlsx(as.data.frame(tabela), paste0(nome_arquivo, ".1.xlsx"), rowNames = TRUE)
+}
+
+vars_chi = c("Indicador_Panorama_cat","Indicador_TIC_cat",paste0("V35",1:8),paste0("V36",1:12),"v304","v305",paste0("V36",13:18),
+              paste0("V362",1:7),"V37",paste0("V37",11:16),"V372","V373",paste0("V374",1:11),"V325","porte_populacional","V7esf_mod")
+vars_kruskal = c("PercLeitos","PercPlanosSaude","ivs","Gini","CoberturaESF")
+indicadores = c("IndSaudeSexual_cat","IndPreNatal_cat","IndSaudeMulher_cat","IndSaudeCrianca_cat","IndHipertenso_cat",
                  "IndDiabetico_cat","IndObesidade_cat","IndTuberculoseHanseniase_cat","IndSofrimentoPsi_cat","IndViolencia_cat",
                  "IndIdosa_cat","IndSaudeHomem_cat","IndPessoasAcamadas_cat","IndAcoesVacinacao_cat","IndAtendimentoUrgEmerg_cat"
                  #"IndAtendimentoProgDemandaEsp_cat","IndAtendimentoDemandaEsp_cat","IndIntegracaoAPS_cat",
                  #"IndRegulacaoAssistencial_cat","IndCuidadoCompartilhado_cat"
                  )
 for (i in seq_along(indicadores)) {
-  ind <- indicadores[i]
+  ind = indicadores[i]
   gera_tabela_chi(vars_chi, ind, paste0("Tabela ", 4 + (i - 1) * 2 + 1))
   gera_tabela_kruskal(vars_kruskal, ind, paste0("Tabela ", 4 + (i - 1) * 2 + 2))
+  gera_tabela_kruskal_cm(vars_kruskal, ind, paste0("Tabela ", 4 + (i - 1) * 2 + 2))
 }
 
-####===============
-#### Modelos - TIC
-####===============
+####=========
+#### Modelos
+####=========
+dados21_ind_ubs = dados21_ind_ubs %>% 
+  mutate(porte_populacional2 = 
+           factor(case_when(porte_populacional == 'Pequeno Porte I' | porte_populacional == 'Pequeno Porte II' ~ 'Pequeno Porte I e II',
+                            porte_populacional == 'Médio Porte' ~ 'Médio Porte',
+                            porte_populacional == 'Grande Porte' | porte_populacional == 'Metrópole' ~ 'Grande Porte e Metrópole'),
+                  c('Pequeno Porte I e II','Médio Porte','Grande Porte e Metrópole')),
+                  Indicador_TIC_cat2 = case_when(Indicador_TIC_cat == 'Péssimo' | Indicador_TIC_cat == 'Ruim' | 
+                                          Indicador_TIC_cat == 'Regular' ~ 0,
+                                        Indicador_TIC_cat == 'Bom' | Indicador_TIC_cat == 'Ótimo' ~ 1),
+         Indicador_Panorama_cat2 = case_when(Indicador_Panorama_cat == 'Péssimo' | Indicador_Panorama_cat == 'Ruim' | 
+                                               Indicador_Panorama_cat == 'Regular' ~ 0,
+                                             Indicador_Panorama_cat == 'Bom' | Indicador_Panorama_cat == 'Ótimo' ~ 1))
+
+####=====
+#### TIC
+####=====
+####==================
+#### Regressão Linear
+####==================
 DescritivaCat(dados21_ind_ubs$Indicador_TIC_cat)
 DescritivaNum(dados21_ind_ubs$Indicador_TIC)
 hist(dados21_ind_ubs$Indicador_TIC)
@@ -1468,94 +1654,148 @@ round(cor(vars_numericas, method = "pearson"), 3)
 #                     data = dados21_ind_ubs, family = Gamma(link = 'log'))
 # summary(mod_TIC_multi_gamma)
 
-mod_TIC_uni1 = lm(Indicador_TIC ~ porte_populacional, data = dados21_ind_ubs)
+mod_TIC_uni1 = lm(Indicador_TIC ~ porte_populacional2, data = dados21_ind_ubs)
 mod_TIC_uni2 = lm(Indicador_TIC ~ PercLeitos, data = dados21_ind_ubs)
 mod_TIC_uni3 = lm(Indicador_TIC ~ PercPlanosSaude, data = dados21_ind_ubs)
-mod_TIC_uni4 = lm(Indicador_TIC ~ ivs, data = dados21_ind_ubs)
-mod_TIC_uni5 = lm(Indicador_TIC ~ Gini, data = dados21_ind_ubs)
-mod_TIC_uni6 = lm(Indicador_TIC ~ CoberturaESF, data = dados21_ind_ubs)
+#mod_TIC_uni4 = lm(Indicador_TIC ~ ivs, data = dados21_ind_ubs)
+#mod_TIC_uni5 = lm(Indicador_TIC ~ Gini, data = dados21_ind_ubs)
+mod_TIC_uni6 = lm(Indicador_TIC ~ V7esf_mod, data = dados21_ind_ubs)
 mod_TIC_uni7 = lm(Indicador_TIC ~ Indicador_Panorama_cat, data = dados21_ind_ubs)
-# write.xlsx(rbind(TabelaRegressaoLinear(mod_TIC_uni1),TabelaRegressaoLinear(mod_TIC_uni2),
-#                  TabelaRegressaoLinear(mod_TIC_uni3),TabelaRegressaoLinear(mod_TIC_uni4),
-#                  TabelaRegressaoLinear(mod_TIC_uni5),TabelaRegressaoLinear(mod_TIC_uni6),
-#                  TabelaRegressaoLinear(mod_TIC_uni7)) %>% as.data.frame(), "Tabela 35.xlsx", rowNames = F)
+write.xlsx(rbind(TabelaRegressaoLinear(mod_TIC_uni1),TabelaRegressaoLinear(mod_TIC_uni2),
+                 TabelaRegressaoLinear(mod_TIC_uni3),#TabelaRegressaoLinear(mod_TIC_uni4),
+                 #TabelaRegressaoLinear(mod_TIC_uni5),
+                 TabelaRegressaoLinear(mod_TIC_uni6),
+                 TabelaRegressaoLinear(mod_TIC_uni7)) %>% as.data.frame(), "Tabela 35.xlsx", rowNames = F)
 
-mod_TIC_multi = lm(Indicador_TIC ~ porte_populacional + PercLeitos + PercPlanosSaude + ivs + 
-                     Gini + #CoberturaESF + 
-                     Indicador_Panorama_cat, 
-                   data = dados21_ind_ubs)
+mod_TIC_multi = lm(Indicador_TIC ~ porte_populacional2 + PercLeitos + PercPlanosSaude + V7esf_mod + 
+                     Indicador_Panorama_cat, data = dados21_ind_ubs)
 summary(mod_TIC_multi)
-#write.xlsx(rbind(TabelaRegressaoLinear(mod_TIC_multi)) %>% as.data.frame(), "Tabela 35.1.xlsx", rowNames = F)
+write.xlsx(rbind(TabelaRegressaoLinear(mod_TIC_multi)) %>% as.data.frame(), "Tabela 35.1.xlsx", rowNames = F)
 car::vif(mod_TIC_multi)
 
-mod_TIC_cat_uni1 = MASS::polr(Indicador_TIC_cat ~ porte_populacional, data = dados21_ind_ubs, Hess = TRUE)
+####=====================
+#### Regressão Logística
+####=====================
+mod_TIC_cat2_uni1 = glm(Indicador_TIC_cat2 ~ porte_populacional2, data = dados21_ind_ubs, family = binomial(link = "logit"))
+mod_TIC_cat2_uni2 = glm(Indicador_TIC_cat2 ~ PercLeitos, data = dados21_ind_ubs, family = binomial(link = "logit"))
+mod_TIC_cat2_uni3 = glm(Indicador_TIC_cat2 ~ PercPlanosSaude, data = dados21_ind_ubs, family = binomial(link = "logit"))
+#mod_TIC_cat2_uni4 = glm(Indicador_TIC_cat2 ~ ivs, data = dados21_ind_ubs, family = binomial(link = "logit"))
+#mod_TIC_cat2_uni5 = glm(Indicador_TIC_cat2 ~ Gini, data = dados21_ind_ubs, family = binomial(link = "logit"))
+mod_TIC_cat2_uni6 = glm(Indicador_TIC_cat2 ~ factor(V7esf_mod), data = dados21_ind_ubs, family = binomial(link = "logit"))
+mod_TIC_cat2_uni7 = glm(Indicador_TIC_cat2 ~ Indicador_Panorama_cat2, data = dados21_ind_ubs, family = binomial(link = "logit"))
+write.xlsx(rbind(TabelaGLMLogistica(mod_TIC_cat2_uni1),TabelaGLMLogistica(mod_TIC_cat2_uni2),
+                 TabelaGLMLogistica(mod_TIC_cat2_uni3),#TabelaGLMLogistica(mod_TIC_cat2_uni4),
+                 #TabelaGLMLogistica(mod_TIC_cat2_uni5),
+                 TabelaGLMLogistica(mod_TIC_cat2_uni6),
+                 TabelaGLMLogistica(mod_TIC_cat2_uni7)) %>% as.data.frame(), "Tabela 36.xlsx", rowNames = F)
+
+mod_TIC_cat2_multi = glm(Indicador_TIC_cat2 ~ porte_populacional2 + PercLeitos + PercPlanosSaude +
+                           factor(V7esf_mod) + Indicador_Panorama_cat2, data = dados21_ind_ubs, family = binomial(link = "logit"))
+summary(mod_TIC_cat2_multi)
+write.xlsx(TabelaGLMLogistica(mod_TIC_cat2_multi) %>% as.data.frame(), "Tabela 36.1.xlsx", rowNames = F)
+car::vif(mod_TIC_cat2_multi)
+
+####=======================
+#### Regressão Multinomial
+####=======================
+mod_TIC_cat_uni1 = MASS::polr(Indicador_TIC_cat ~ porte_populacional2, data = dados21_ind_ubs, Hess = TRUE)
 mod_TIC_cat_uni2 = MASS::polr(Indicador_TIC_cat ~ PercLeitos, data = dados21_ind_ubs, Hess = TRUE)
 mod_TIC_cat_uni3 = MASS::polr(Indicador_TIC_cat ~ PercPlanosSaude, data = dados21_ind_ubs, Hess = TRUE)
-mod_TIC_cat_uni4 = MASS::polr(Indicador_TIC_cat ~ ivs, data = dados21_ind_ubs, Hess = TRUE)
-mod_TIC_cat_uni5 = MASS::polr(Indicador_TIC_cat ~ Gini, data = dados21_ind_ubs, Hess = TRUE)
-mod_TIC_cat_uni6 = MASS::polr(Indicador_TIC_cat ~ CoberturaESF, data = dados21_ind_ubs, Hess = TRUE)
+#mod_TIC_cat_uni4 = MASS::polr(Indicador_TIC_cat ~ ivs, data = dados21_ind_ubs, Hess = TRUE)
+#mod_TIC_cat_uni5 = MASS::polr(Indicador_TIC_cat ~ Gini, data = dados21_ind_ubs, Hess = TRUE)
+mod_TIC_cat_uni6 = MASS::polr(Indicador_TIC_cat ~ factor(V7esf_mod), data = dados21_ind_ubs, Hess = TRUE)
 mod_TIC_cat_uni7 = MASS::polr(Indicador_TIC_cat ~ Indicador_Panorama_cat, data = dados21_ind_ubs, Hess = TRUE)
-# write.xlsx(rbind(TabelaMultinomialOrdinal(mod_TIC_cat_uni1),TabelaMultinomialOrdinal(mod_TIC_cat_uni2),
-#                  TabelaMultinomialOrdinal(mod_TIC_cat_uni3),TabelaMultinomialOrdinal(mod_TIC_cat_uni4),
-#                  TabelaMultinomialOrdinal(mod_TIC_cat_uni5),TabelaMultinomialOrdinal(mod_TIC_cat_uni6),
-#                  TabelaMultinomialOrdinal(mod_TIC_cat_uni7)) %>% as.data.frame(), "Tabela 36.xlsx", rowNames = F)
+write.xlsx(rbind(TabelaMultinomialOrdinal(mod_TIC_cat_uni1),TabelaMultinomialOrdinal(mod_TIC_cat_uni2),
+                 TabelaMultinomialOrdinal(mod_TIC_cat_uni3),#TabelaMultinomialOrdinal(mod_TIC_cat_uni4),
+                 #TabelaMultinomialOrdinal(mod_TIC_cat_uni5),
+                 TabelaMultinomialOrdinal(mod_TIC_cat_uni6),
+                 TabelaMultinomialOrdinal(mod_TIC_cat_uni7)) %>% as.data.frame(), "Tabela 37.xlsx", rowNames = F)
 
-mod_TIC_cat_multi = MASS::polr(Indicador_TIC_cat ~ porte_populacional + PercLeitos + PercPlanosSaude +
-                     ivs + Gini + #CoberturaESF + 
-                       Indicador_Panorama_cat,
-                   data = dados21_ind_ubs, Hess = TRUE)
+mod_TIC_cat_multi = MASS::polr(Indicador_TIC_cat ~ porte_populacional2 + PercLeitos + PercPlanosSaude +
+                                 factor(V7esf_mod) + Indicador_Panorama_cat,
+                               data = dados21_ind_ubs, Hess = TRUE)
 summary(mod_TIC_cat_multi)
 ctable = coef(summary(mod_TIC_cat_multi))
 p = pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2
 ctable = cbind(ctable, "p value" = p)
 round(ctable %>% as.data.frame() %>% select('p value'),5)
-#write.xlsx(rbind(TabelaMultinomialOrdinal(mod_TIC_cat_multi)) %>% as.data.frame(), "Tabela 36.1.xlsx", rowNames = F)
+write.xlsx(rbind(TabelaMultinomialOrdinal(mod_TIC_cat_multi)) %>% as.data.frame(), "Tabela 37.1.xlsx", rowNames = F)
 
-####====================
-#### Modelos - Panorama
-####====================
+####==========
+#### Panorama
+####==========
+####==================
+#### Regressão Linear
+####==================
 DescritivaCat(dados21_ind_ubs$Indicador_Panorama_cat)
 DescritivaNum(dados21_ind_ubs$Indicador_Panorama)
 hist(dados21_ind_ubs$Indicador_Panorama)
 
-mod_Panorama_uni1 = lm(Indicador_Panorama ~ porte_populacional, data = dados21_ind_ubs)
+mod_Panorama_uni1 = lm(Indicador_Panorama ~ porte_populacional2, data = dados21_ind_ubs)
 mod_Panorama_uni2 = lm(Indicador_Panorama ~ PercLeitos, data = dados21_ind_ubs)
 mod_Panorama_uni3 = lm(Indicador_Panorama ~ PercPlanosSaude, data = dados21_ind_ubs)
-mod_Panorama_uni4 = lm(Indicador_Panorama ~ ivs, data = dados21_ind_ubs)
-mod_Panorama_uni5 = lm(Indicador_Panorama ~ Gini, data = dados21_ind_ubs)
-mod_Panorama_uni6 = lm(Indicador_Panorama ~ CoberturaESF, data = dados21_ind_ubs)
+#mod_Panorama_uni4 = lm(Indicador_Panorama ~ ivs, data = dados21_ind_ubs)
+#mod_Panorama_uni5 = lm(Indicador_Panorama ~ Gini, data = dados21_ind_ubs)
+mod_Panorama_uni6 = lm(Indicador_Panorama ~ factor(V7esf_mod), data = dados21_ind_ubs)
 mod_Panorama_uni7 = lm(Indicador_Panorama ~ Indicador_TIC_cat, data = dados21_ind_ubs)
-# write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_uni1),TabelaRegressaoLinear(mod_Panorama_uni2),
-#                  TabelaRegressaoLinear(mod_Panorama_uni3),TabelaRegressaoLinear(mod_Panorama_uni4),
-#                  TabelaRegressaoLinear(mod_Panorama_uni5),TabelaRegressaoLinear(mod_Panorama_uni6),
-#                  TabelaRegressaoLinear(mod_Panorama_uni7)) %>% as.data.frame(), "Tabela 37.xlsx", rowNames = F)
+write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_uni1),TabelaRegressaoLinear(mod_Panorama_uni2),
+                 TabelaRegressaoLinear(mod_Panorama_uni3),#TabelaRegressaoLinear(mod_Panorama_uni4),
+                 #TabelaRegressaoLinear(mod_Panorama_uni5),
+                 TabelaRegressaoLinear(mod_Panorama_uni6),
+                 TabelaRegressaoLinear(mod_Panorama_uni7)) %>% as.data.frame(), "Tabela 38.xlsx", rowNames = F)
 
-mod_Panorama_multi = lm(Indicador_Panorama ~ porte_populacional + PercLeitos + PercPlanosSaude + ivs + 
-                     Gini + CoberturaESF + 
-                       Indicador_TIC_cat, 
-                   data = dados21_ind_ubs)
+mod_Panorama_multi = lm(Indicador_Panorama ~ porte_populacional2 + PercLeitos + PercPlanosSaude + factor(V7esf_mod) + 
+                          Indicador_TIC_cat, data = dados21_ind_ubs)
 summary(mod_Panorama_multi)
-# write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_multi)) %>% as.data.frame(), "Tabela 37.1.xlsx", rowNames = F)
+write.xlsx(rbind(TabelaRegressaoLinear(mod_Panorama_multi)) %>% as.data.frame(), "Tabela 38.1.xlsx", rowNames = F)
 car::vif(mod_Panorama_multi)
 
-mod_Panorama_cat_uni1 = MASS::polr(Indicador_Panorama_cat ~ porte_populacional, data = dados21_ind_ubs, Hess = TRUE)
+####=====================
+#### Regressão Logística
+####=====================
+mod_Panorama_cat2_uni1 = glm(Indicador_Panorama_cat2 ~ porte_populacional2, data = dados21_ind_ubs, family = binomial(link = "logit"))
+mod_Panorama_cat2_uni2 = glm(Indicador_Panorama_cat2 ~ PercLeitos, data = dados21_ind_ubs, family = binomial(link = "logit"))
+mod_Panorama_cat2_uni3 = glm(Indicador_Panorama_cat2 ~ PercPlanosSaude, data = dados21_ind_ubs, family = binomial(link = "logit"))
+#mod_Panorama_cat2_uni4 = glm(Indicador_Panorama_cat2 ~ ivs, data = dados21_ind_ubs, family = binomial(link = "logit"))
+#mod_Panorama_cat2_uni5 = glm(Indicador_Panorama_cat2 ~ Gini, data = dados21_ind_ubs, family = binomial(link = "logit"))
+mod_Panorama_cat2_uni6 = glm(Indicador_Panorama_cat2 ~ V7esf_mod, data = dados21_ind_ubs, family = binomial(link = "logit"))
+mod_Panorama_cat2_uni7 = glm(Indicador_Panorama_cat2 ~ Indicador_TIC_cat, data = dados21_ind_ubs, family = binomial(link = "logit"))
+write.xlsx(rbind(TabelaGLMLogistica(mod_Panorama_cat2_uni1),TabelaGLMLogistica(mod_Panorama_cat2_uni2),
+                 TabelaGLMLogistica(mod_Panorama_cat2_uni3),#TabelaGLMLogistica(mod_Panorama_cat2_uni4),
+                 #TabelaGLMLogistica(mod_Panorama_cat2_uni5),
+                 TabelaGLMLogistica(mod_Panorama_cat2_uni6),
+                 TabelaGLMLogistica(mod_Panorama_cat2_uni7)) %>% as.data.frame(), "Tabela 39.xlsx", rowNames = F)
+
+mod_Panorama_cat2_multi = glm(Indicador_Panorama_cat2 ~ porte_populacional2 + #PercLeitos + 
+                                PercPlanosSaude +
+                                V7esf_mod + 
+                                Indicador_TIC_cat, 
+                              data = dados21_ind_ubs, family = binomial(link = "logit"))
+summary(mod_Panorama_cat2_multi)
+write.xlsx(TabelaGLMLogistica(mod_Panorama_cat2_multi) %>% as.data.frame(), "Tabela 39.1.xlsx", rowNames = F)
+car::vif(mod_Panorama_cat2_multi)
+
+####=======================
+#### Regressão Multinomial
+####=======================
+mod_Panorama_cat_uni1 = MASS::polr(Indicador_Panorama_cat ~ porte_populacional2, data = dados21_ind_ubs, Hess = TRUE)
 mod_Panorama_cat_uni2 = MASS::polr(Indicador_Panorama_cat ~ PercLeitos, data = dados21_ind_ubs, Hess = TRUE)
 mod_Panorama_cat_uni3 = MASS::polr(Indicador_Panorama_cat ~ PercPlanosSaude, data = dados21_ind_ubs, Hess = TRUE)
-mod_Panorama_cat_uni4 = MASS::polr(Indicador_Panorama_cat ~ ivs, data = dados21_ind_ubs, Hess = TRUE)
-mod_Panorama_cat_uni5 = MASS::polr(Indicador_Panorama_cat ~ Gini, data = dados21_ind_ubs, Hess = TRUE)
-mod_Panorama_cat_uni6 = MASS::polr(Indicador_Panorama_cat ~ CoberturaESF, data = dados21_ind_ubs, Hess = TRUE)
+#mod_Panorama_cat_uni4 = MASS::polr(Indicador_Panorama_cat ~ ivs, data = dados21_ind_ubs, Hess = TRUE)
+#mod_Panorama_cat_uni5 = MASS::polr(Indicador_Panorama_cat ~ Gini, data = dados21_ind_ubs, Hess = TRUE)
+mod_Panorama_cat_uni6 = MASS::polr(Indicador_Panorama_cat ~ factor(V7esf_mod), data = dados21_ind_ubs, Hess = TRUE)
 mod_Panorama_cat_uni7 = MASS::polr(Indicador_Panorama_cat ~ Indicador_TIC_cat, data = dados21_ind_ubs, Hess = TRUE)
-# write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_uni1),TabelaMultinomialOrdinal(mod_Panorama_cat_uni2),
-#                  TabelaMultinomialOrdinal(mod_Panorama_cat_uni3),TabelaMultinomialOrdinal(mod_Panorama_cat_uni4),
-#                  TabelaMultinomialOrdinal(mod_Panorama_cat_uni5),TabelaMultinomialOrdinal(mod_Panorama_cat_uni6),
-#                  TabelaMultinomialOrdinal(mod_Panorama_cat_uni7)) %>% as.data.frame(), "Tabela 38.xlsx", rowNames = F)
+write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_uni1),TabelaMultinomialOrdinal(mod_Panorama_cat_uni2),
+                 TabelaMultinomialOrdinal(mod_Panorama_cat_uni3),#TabelaMultinomialOrdinal(mod_Panorama_cat_uni4),
+                 #TabelaMultinomialOrdinal(mod_Panorama_cat_uni5),
+                 TabelaMultinomialOrdinal(mod_Panorama_cat_uni6),
+                 TabelaMultinomialOrdinal(mod_Panorama_cat_uni7)) %>% as.data.frame(), "Tabela 40.xlsx", rowNames = F)
 
-mod_Panorama_cat_multi = MASS::polr(Indicador_Panorama_cat ~ porte_populacional + PercLeitos + PercPlanosSaude +
-                                      ivs + Gini + CoberturaESF + 
-                                      Indicador_TIC_cat,
+mod_Panorama_cat_multi = MASS::polr(Indicador_Panorama_cat ~ porte_populacional2 + PercLeitos + PercPlanosSaude +
+                                      factor(V7esf_mod) + Indicador_TIC_cat,
                                     data = dados21_ind_ubs, Hess = TRUE)
 summary(mod_Panorama_cat_multi)
-#write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_multi)) %>% as.data.frame(), "Tabela 38.1.xlsx", rowNames = F)
+write.xlsx(rbind(TabelaMultinomialOrdinal(mod_Panorama_cat_multi)) %>% as.data.frame(), "Tabela 40.1.xlsx", rowNames = F)
 
 
 ####========================================

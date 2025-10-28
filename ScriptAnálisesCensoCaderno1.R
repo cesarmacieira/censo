@@ -5,7 +5,7 @@
 #### Preparando o R para análise
 ####=============================
 rm(list=ls(all=T))#Limpar ambiente/histórico
-tryCatch({setwd("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/censo")},
+tryCatch({setwd("C:/Users/cesar_macieira/Desktop/Projetos/Nescon/censo")},
          error = function(e) { setwd("D:/NESCON/Trabalho - Censo/censo") })
 
 ####=================================
@@ -348,7 +348,7 @@ TabelaGLMMBeta = function(modelo){
 ####=============================
 #### Carregando o banco de dados 
 ####=============================
-dados_originais = tryCatch({read_dta("C:/Users/cesar_macieira/Desktop/Usiminas/Nescon/censo/censo2024 22_01_25.dta")},
+dados_originais = tryCatch({read_dta("C:/Users/cesar_macieira/Desktop/Projetos/Nescon/censo/censo2024 22_01_25.dta")},
                            error = function(e) {read_dta("D:/NESCON/Trabalho - Censo/censo/censo2024 22_01_25.dta")})
 #write.xlsx(dados_originais %>% as.data.frame(), 'Dados Censo 28-01-2025.xlsx')
 
