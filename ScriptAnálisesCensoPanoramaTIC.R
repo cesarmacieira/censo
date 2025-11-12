@@ -1571,6 +1571,10 @@ Tabela4.1 = rbind(KruskalTeste(dados21_ind_ubs$PercLeitos,dados21_ind_ubs$Indica
                 KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$Indicador_TIC_cat)$C.Multiplas)
 #write.xlsx(Tabela4.1 %>% as.data.frame(), 'Tabela 4.1.xlsx', rowNames = T)
 
+Tabela4.2 = rbind(KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$V17)$tabela,
+                  KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$Regiao)$tabela)
+write.xlsx(Tabela4.2 %>% as.data.frame(), 'Tabela 4.2.xlsx', rowNames = T)
+
 ####=========================
 #### Comparações Indicadores
 ####=========================
