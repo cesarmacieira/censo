@@ -1573,7 +1573,7 @@ Tabela4.1 = rbind(KruskalTeste(dados21_ind_ubs$PercLeitos,dados21_ind_ubs$Indica
 
 Tabela4.2 = rbind(KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$V17)$tabela,
                   KruskalTeste(dados21_ind_ubs$CoberturaESF,dados21_ind_ubs$Regiao)$tabela)
-write.xlsx(Tabela4.2 %>% as.data.frame(), 'Tabela 4.2.xlsx', rowNames = T)
+#write.xlsx(Tabela4.2 %>% as.data.frame(), 'Tabela 4.2.xlsx', rowNames = T)
 
 ####=========================
 #### Comparações Indicadores
@@ -1619,12 +1619,14 @@ dados21_ind_ubs = dados21_ind_ubs %>%
                             porte_populacional == 'Médio Porte' ~ 'Médio Porte',
                             porte_populacional == 'Grande Porte' | porte_populacional == 'Metrópole' ~ 'Grande Porte e Metrópole'),
                   c('Pequeno Porte I e II','Médio Porte','Grande Porte e Metrópole')),
-                  Indicador_TIC_cat2 = case_when(Indicador_TIC_cat == 'Péssimo' | Indicador_TIC_cat == 'Ruim' | 
+         Indicador_TIC_cat2 = case_when(Indicador_TIC_cat == 'Péssimo' | Indicador_TIC_cat == 'Ruim' | 
                                           Indicador_TIC_cat == 'Regular' ~ 0,
                                         Indicador_TIC_cat == 'Bom' | Indicador_TIC_cat == 'Ótimo' ~ 1),
          Indicador_Panorama_cat2 = case_when(Indicador_Panorama_cat == 'Péssimo' | Indicador_Panorama_cat == 'Ruim' | 
                                                Indicador_Panorama_cat == 'Regular' ~ 0,
                                              Indicador_Panorama_cat == 'Bom' | Indicador_Panorama_cat == 'Ótimo' ~ 1))
+DescritivaCat(dados21_ind_ubs$Indicador_TIC_cat)
+DescritivaCat(dados21_ind_ubs$Indicador_TIC_cat2)
 
 ####=====
 #### TIC
@@ -1665,11 +1667,11 @@ mod_TIC_uni3 = lm(Indicador_TIC ~ PercPlanosSaude, data = dados21_ind_ubs)
 #mod_TIC_uni5 = lm(Indicador_TIC ~ Gini, data = dados21_ind_ubs)
 mod_TIC_uni6 = lm(Indicador_TIC ~ V7esf_mod, data = dados21_ind_ubs)
 mod_TIC_uni7 = lm(Indicador_TIC ~ Indicador_Panorama_cat, data = dados21_ind_ubs)
-write.xlsx(rbind(TabelaRegressaoLinear(mod_TIC_uni1),TabelaRegressaoLinear(mod_TIC_uni2),
-                 TabelaRegressaoLinear(mod_TIC_uni3),#TabelaRegressaoLinear(mod_TIC_uni4),
-                 #TabelaRegressaoLinear(mod_TIC_uni5),
-                 TabelaRegressaoLinear(mod_TIC_uni6),
-                 TabelaRegressaoLinear(mod_TIC_uni7)) %>% as.data.frame(), "Tabela 35.xlsx", rowNames = F)
+# write.xlsx(rbind(TabelaRegressaoLinear(mod_TIC_uni1),TabelaRegressaoLinear(mod_TIC_uni2),
+#                  TabelaRegressaoLinear(mod_TIC_uni3),#TabelaRegressaoLinear(mod_TIC_uni4),
+#                  #TabelaRegressaoLinear(mod_TIC_uni5),
+#                  TabelaRegressaoLinear(mod_TIC_uni6),
+#                  TabelaRegressaoLinear(mod_TIC_uni7)) %>% as.data.frame(), "Tabela 35.xlsx", rowNames = F)
 
 mod_TIC_multi = lm(Indicador_TIC ~ porte_populacional2 + PercLeitos + PercPlanosSaude + V7esf_mod + 
                      Indicador_Panorama_cat, data = dados21_ind_ubs)
