@@ -296,6 +296,10 @@ df = as.data.frame(lapply(dados_originais, function(col) {
   return(col)}), stringsAsFactors = FALSE)
 df1 = df %>% mutate(across(everything(), ~ na_if(as.character(.), 'NA'))) 
 #write.xlsx(df1 %>% as.data.frame(),'dados Contagem.xlsx')
+
+####===============
+#### Saúde digital
+####===============
 # 25. Assinale os equipamento e insumos disponíveis e em condições de uso nesta UBS:
 # Não e Sim - ( ) Eletrocardiógrafo digital 
 # Não e Sim - ( ) Retinógrafo portátil digital 
@@ -472,7 +476,7 @@ df1 = df1 %>%
     across(c(V3741, V3742, V3743, V3744, V3745, V3746, V3747, V3748, V3749, V37410, V37411), ~ ifelse(V37 == "Não", "Não", .x), .names = "{.col}_nova"),
     V372_nova = ifelse(V37 == "Não", "Não utiliza prontuário eletrônico", V372),
     V373_nova = ifelse(V37 == "Não", "Não", V373))
-vars_descritiva = c(
+vars_descritiva_saude = c(
   "V2537","V2564","V2565","V2567",
   "V321","V322","V323","V324","V325","V326",
   "V33",
@@ -487,10 +491,10 @@ vars_descritiva = c(
   "V3741_nova","V3742_nova","V3743_nova","V3744_nova","V3745_nova","V3746_nova","V3747_nova","V3748_nova","V3749_nova","V37410_nova","V37411_nova"
 )
 
-resultado_descritivo = lapply(vars_descritiva, function(v){DescritivaCat(df1[[v]])})
+resultado_descritivo_saude = lapply(vars_descritiva_saude, function(v){DescritivaCat(df1[[v]])})
 
-names(resultado_descritivo) = vars_descritiva
-enunciados = c(
+names(resultado_descritivo_saude) = vars_descritiva_saude
+enunciados_saude = c(
   V2537 = "Eletrocardiógrafo digital disponível e em condições de uso",
   V2564 = "Retinógrafo portátil digital disponível e em condições de uso",
   V2565 = "Espirômetro digital disponível e em condições de uso",
@@ -576,13 +580,13 @@ enunciados = c(
   V37410_nova = "Prontuário eletrônico compartilhado com CEO",
   V37411_nova = "Prontuário eletrônico não compartilhado com outros pontos da rede"
 )
-resultado_final = do.call(rbind, lapply(vars_descritiva, function(v){
+resultado_final = do.call(rbind, lapply(vars_descritiva_saude, function(v){
   
   tab = as.data.frame(DescritivaCat(df1[[v]]))
   
   tab$Categoria = rownames(tab)
   tab$Variavel = v
-  tab$Enunciado = enunciados[v]
+  tab$Enunciado = enunciados_saude[v]
   
   rownames(tab) = NULL
   
@@ -590,4 +594,386 @@ resultado_final = do.call(rbind, lapply(vars_descritiva, function(v){
   
   return(tab)
 }))
-write.xlsx(resultado_final %>% as.data.frame(),"Análise descritiva Contagem 08-06-2026.xlsx")
+#write.xlsx(resultado_final %>% as.data.frame(),"Análise descritiva Contagem 08-06-2026.xlsx")
+
+####========================
+#### Coordenação do cuidado
+####========================
+# 102. Nesta UBS, as consultas são agendadas com hora marcada?
+DescritivaCat(df1$V102)
+
+# V.103. Selecione a(s) forma(s) de agendamento de consulta na UBS pelo usuário:
+# V.103.1   Não e Sim - ( ) Presencialmente na UBS 
+# V.103.2		Não e Sim - ( ) Por telefone 
+# V.103.3		Não e Sim - ( ) Pelo WhatsApp
+# V.103.4		Não e Sim - ( ) Por site específico para agendamento de consulta na UBS 
+# V.103.5		Não e Sim - ( ) Meu SUS digital 
+# V.103.6		Não e Sim - ( ) Por aplicativo desenvolvido para este fim 
+# V.103.7		Não e Sim - ( ) Consulta agendada pelo ACS 
+# V.103.8		Não e Sim - ( ) Outra
+df1 %>% select(V1031,V1032,V1033,V1034,v1035,v1036,v1037,v1038) %>% map(DescritivaCat)
+
+# 104. Nesta UBS, como é realizada a marcação de consulta da demanda programada para os grupos prioritários?
+# V.104.1		Não e Sim - ( ) O próximo atendimento é agendado no final de cada consulta 
+# V.104.2		Não e Sim - ( ) A consulta é marcada pela equipe e depois comunicada ao usuário 
+# V.104.3		Não e Sim - ( ) A próxima consulta é marcada pelo usuário na UBS 
+# V.104.4		Não e Sim - ( ) O usuário é orientado a vir à UBS em dia específico, sem agendamento prévio 
+# V.104.5		Não e Sim - ( ) O usuário é orientado a vir à UBS quando sentir necessidade e sem agendamento prévio 
+# V.104.6		Não e Sim - ( ) Outro 
+df1 %>% select(v1041,v1042,v1043,v1044,v1045,v1046) %>% map(DescritivaCat)
+
+# V.105	Nesta UBS, há disponibilidade de consultas para atendimento à demanda espontânea todos os dias?	
+# ( ) Sim, para todos os turnos de funcionamento da UBS 
+# ( ) Sim, apenas em um turno 
+# ( ) Não são reservadas vagas de consultas para atendimento à demanda espontânea.
+DescritivaCat(df1$v105)
+
+# 106. Quais são as estratégias de comunicação entre os profissionais da(s) equipe(s) e profissionais de outros pontos da rede?
+# V.106.1		Não e Sim - ( ) Reuniões técnicas ou sessões clínicas conjuntas 
+# V.106.2		Não e Sim - ( ) Consulta compartilhada 
+# V.106.3		Não e Sim - ( ) Telessaúde 
+# V.106.4		Não e Sim - ( ) Prontuário Eletrônico compartilhado 
+# V.106.5		Não e Sim - ( ) Comunicação via e-mail
+# V.106.6		Não e Sim - ( ) Comunicação via Whatsapp
+# V.106.7		Não e Sim - ( ) Ficha de referência/contrarreferência 
+# V.106.8		Não e Sim - ( ) Contato telefônico 
+# V.106.9		Não e Sim - ( ) Formulário de Compartilhamento do Cuidado 
+# V.106.10		Não e Sim - ( ) Plano de Cuidado Compartilhado ou Projeto Terapêutico Singular (PTS) 
+# V.106.11		Não e Sim - ( ) Outro
+# V.106.12		Não e Sim - ( ) Não há estratégia de comunicação entre os profissionais da(s) equipe(s) e profissionais de outros pontos da rede. 
+df1 %>% select(v1061,v1062,v1063,v1064,v1065,v1066,v1067,v1068,v1069,v10610,v10611,v10612) %>% map(DescritivaCat)
+
+# 107. Com que frequência a(s) equipe(s) desta UBS troca(m) informações com especialistas de outros pontos da rede sobre os usuários encaminhados?	
+DescritivaCat(df1$v107)
+df1$v107 = factor(df1$v107, c("Nunca","Raramente","Algumas vezes","Quase sempre","Sempre"))
+
+# 108. Com que frequência a(s) equipe(s) desta UBS recebe(m) o resumo de alta hospitalar dos usuários do território?
+DescritivaCat(df1$v108_01)
+df1$v108_01 = factor(df1$v108_01, levels = c("Nunca", "Raramente", "Algumas vezes", "Quase sempre", "Sempre"), ordered = TRUE)
+
+# 109. Quando um usuário é atendido nesta UBS e necessita ser encaminhado para uma consulta com outros especialistas, quais são as formas possíveis?
+# V.109.1		Não e Sim - ( ) A consulta é marcada pela UBS e informada na hora para o usuário 
+# V.109.2		Não e Sim - ( ) A consulta é marcada pela UBS, pelo sistema de regulação e a data posteriormente informada ao usuário 
+# V.109.3		Não e Sim - ( ) A consulta é marcada pelo próprio usuário junto à central de marcação de consultas especializadas 
+# V.109.4		Não e Sim - ( ) O usuário recebe uma ficha de encaminhamento/referência e deve se dirigir a um serviço indicado pela equipe 
+# V.109.5		Não e Sim - ( ) O usuário busca a consulta especializada por conta própria
+df1 %>% select(v1091, v1092, v1093, v1094, v1095) %>% map(DescritivaCat)
+
+# 110. Indique para quais condições abaixo existem serviços de referência definidos:
+# V.110.1		Não e Sim - ( ) Suspeita de câncer de mama 
+# V.110.2		Não e Sim - ( ) Suspeita de câncer do colo do útero 
+# V.110.3		Não e Sim - ( ) Gestação de alto risco 
+# V.110.4		Não e Sim - ( ) Parto (maternidade) 
+# V.110.5		Não e Sim - ( ) Síndrome coronariana aguda 
+# V.110.6		Não e Sim - ( ) Acidente Vascular Encefálico (AVE) 
+# V.110.7		Não e Sim - ( ) Atendimento odontológico especializado 
+# V.110.8		Não e Sim - ( ) Suspeita de câncer de boca 
+# V.110.9		Não e Sim - ( ) Violência(s) 
+# V.110.10		Não e Sim - ( ) Saúde Mental 
+# V.110.11		Não e Sim - ( ) Outro 
+# V.110.12		Não e Sim - ( ) Não existem serviços de referência
+df1 %>% select(v1101, v1102, v1103, v1104, v1105, v1106, v1107, v1108, v1109, v11010, v11011, v11012) %>% map(DescritivaCat)
+
+# 111. Nesta UBS são utilizados protocolos técnicos para acesso aos serviços de atenção especializada?
+DescritivaCat(df1$v111)
+  
+# 112. Nesta UBS, há profissional responsável pela regulação assistencial que analisa os encaminhamentos à atenção especializada antes da inserção no sistema de regulação?
+DescritivaCat(df1$v112)
+  
+# 113. Nesta UBS, os encaminhamentos solicitados por enfermeiras(os) à atenção especializada são aceitos para inserção no sistema de regulação?
+DescritivaCat(df1$v113)
+  
+# 114. Nesta UBS, há registro/lista dos usuários encaminhados para outros pontos de atenção da rede?
+DescritivaCat(df1$v114)
+
+# 115. Nesta UBS, é realizado o monitoramento dos tempos de espera dos usuários encaminhados a outros pontos de atenção da rede?
+DescritivaCat(df1$v115_01) 
+
+# 116. Esta UBS, dispõe de acesso a serviço de transporte para usuárias (os) encaminhados para serviços de saúde especializados?
+DescritivaCat(df1$v116_01)
+
+# 117. Com quais serviços as(os) profissionais da UBS compartilham o cuidado?
+# V.117.1		Não e Sim - ( ) Equipe multiprofissional (eMulti) 
+# V.117.2		Não e Sim - ( ) Centro de Atenção Psicossocial (CAPS) 
+# V.117.3		Não e Sim - ( ) Centro de Testagem e Aconselhamento (CTA) 
+# V.117.4		Não e Sim - ( ) Serviços de Atenção Especializada em Infecções Sexualmente Transmissíveis (SAE) 
+# V.117.5		Não e Sim - ( ) Hospitais 
+# V.117.6		Não e Sim - ( ) Policlínicas regionais 
+# V.117.7		Não e Sim - ( ) Centro Ambulatorial de Especialidades 
+# V.117.8		Não e Sim - ( ) Maternidades 
+# V.117.9		Não e Sim - ( ) Polo da Academia da Saúde 
+# V.117.10		Não e Sim - ( ) Centros especializados: idoso 
+# V.117.11		Não e Sim - ( ) Centros especializados: doenças crônicas 
+# V.117.12		Não e Sim - ( ) Centros especializados: obesidade 
+# V.117.13		Não e Sim - ( ) Centros especializados: oncologia 
+# V.117.14		Não e Sim - ( ) Centros especializados: reabilitação 
+# V.117.15		Não e Sim - ( ) Centros de referência de saúde do trabalhador (CEREST) 
+# V.117.16		Não e Sim - ( ) Centros especializados: materno-infantil 
+# V.117.17		Não e Sim - ( ) Centro de Especialidades Odontológicas (CEO) 
+# V.117.18		Não e Sim - ( ) Serviço de Especialidade em Saúde Bucal (Sesb) 
+# V.117.19		Não e Sim - ( ) Serviço de Atenção Domiciliar 
+# V.117.20		Não e Sim - ( ) Não compartilham o cuidado
+df1 %>% select(v1171, v1172, v1173, v1174, v1175, v1176, v1177, v1178, v1179, v11710, v11711, v11712, 
+               v11713, v11714, v11715, v11716, v11717, v11718, v11719, v11720) %>% map(DescritivaCat)
+
+# 118. Nesta UBS, quais serviços de vigilância apoiam a(s) equipe(s)?
+# V.118.1		Não e Sim - ( ) Vigilância epidemiológica 
+# V.118.2		Não e Sim - ( ) Vigilância sanitária 
+# V.118.3		Não e Sim - ( ) Vigilância em saúde do trabalhador 
+# V.118.4		Não e Sim - ( ) Vigilância ambiental 
+# V.118.5		Não e Sim - ( ) Não recebe apoio de nenhum serviço de vigilância
+df1 %>% select(v1181,v1182,v1183,v1184,v1185) %>% map(DescritivaCat)
+
+# 119. Quais profissionais integram a(s) equipe(s) multiprofissional(is) (eMulti) vinculada a esta UBS?
+# V.119.1		Não e Sim - ( ) Arte educador 
+# V.119.2		Não e Sim - ( ) Assistente social 
+# V.119.3		Não e Sim - ( ) Profissional de Educação Física 
+# V.119.4		Não e Sim - ( ) Farmacêutica(o) clínica(o) 
+# V.119.5		Não e Sim - ( ) Fisioterapeuta 
+# V.119.6		Não e Sim - ( ) Fonoaudióloga(o) 
+# V.119.7		Não e Sim - ( ) Médica(o) acupunturista 
+# V.119.8		Não e Sim - ( ) Médica(o) cardiologista 
+# V.119.9		Não e Sim - ( ) Médica(o) dermatologista 
+# V.119.10		Não e Sim - ( ) Médica(o) endocrinologista 
+# V.119.11		Não e Sim - ( ) Médica(o) geriatra 
+# V.119.12		Não e Sim - ( ) Médica(o) ginecologista/Obstetra 
+# V.119.13		Não e Sim - ( ) Médica(o) hansenologista 
+# V.119.14		Não e Sim - ( ) Médica(o) homeopata 
+# V.119.15		Não e Sim - ( ) Médica(o) infectologista 
+# V.119.16		Não e Sim - ( ) Médica(o) pediatra 
+# V.119.17		Não e Sim - ( ) Médica(o) psiquiatra 
+# V.119.18		Não e Sim - ( ) Médica(o) veterinária(o) 
+# V.119.19		Não e Sim - ( ) Nutricionista 
+# V.119.20		Não e Sim - ( ) Psicóloga(o) 
+# V.119.21		Não e Sim - ( ) Sanitarista 
+# V.119.22		Não e Sim - ( ) Terapeuta ocupacional
+df1 %>% select(v1191, v1192, v1193, v1194, v1195, v1196, v1197, v1198, v1199, v11910, 
+               v11911, v11912, v11913, v11914, v11915, v11916, v11917, v11918, v11919, v11920, v11921, v1192) %>% map(DescritivaCat)
+
+# 120. Nesta UBS, são realizadas reuniões das demais equipes da UBS com os profissionais da equipe multiprofissional (eMulti)?
+DescritivaCat(df1$v120)
+df1$V7emulti_cat = case_when(as.numeric(df1$V7emulti) == 0 ~ "Não",
+                             as.numeric(df1$V7emulti) > 0 ~ "Sim")
+df1$v120_nova = ifelse(df1$V7emulti_cat == "Não", "Não", df1$v120)
+
+# 120.1. Se sim, qual a periodicidade das reuniões das demais equipes da UBS com os profissionais da equipe multiprofissional (eMulti)?
+DescritivaCat(df1$v1201)
+
+# 120. Nesta UBS, são realizadas reuniões das demais equipes da UBS com os profissionais da equipe multiprofissional (eMulti)?
+# V.120.2.1		Não e Sim - ( ) Ações de caráter assistencial 
+# V.120.2.2		Não e Sim - ( ) Consulta presencial compartilhada 
+# V.120.2.3		Não e Sim - ( ) Plano de cuidado da APS/Projeto Terapêutico Singular 
+# V.120.2.4		Não e Sim - ( ) Grupos terapêuticos 
+# V.120.2.5		Não e Sim - ( ) Atendimento domiciliar 
+# V.120.2.6		Não e Sim - ( ) Teleconsulta 
+df1 %>% select(v12021, v12022, v12023, v12024, v12025, v12026) %>% map(DescritivaCat)
+
+#121. Nesta UBS, o atendimento à(s) pessoa(s) com deficiência é realizado com o apoio da equipe multiprofissional (eMulti)?
+DescritivaCat(df1$v121)
+
+df1 = df1 %>%
+  mutate(
+    # 119. Quais profissionais integram a(s) equipe(s) multiprofissional(is) (eMulti) vinculada a esta UBS?
+    across(c(v1191, v1192, v1193, v1194, v1195, v1196, v1197, v1198, v1199, v11910, 
+             v11911, v11912, v11913, v11914, v11915, v11916, v11917, v11918, v11919, 
+             v11920, v11921, v11922), ~ ifelse(V7emulti_cat == "Não", "Não", .x), .names = "{.col}_nova"),
+    
+    # Q120.1 - se não realiza reunião com eMulti, periodicidade recebe categoria própria
+    v1201_nova = case_when(v120_nova == "Não" ~ "Não realiza reuniões com eMulti", 
+                           TRUE ~ v1201),
+    # Q120.2 - se não realiza reunião com eMulti, as ações vinculadas viram "Não"
+    across(c(v12021, v12022, v12023, v12024, v12025, v12026), ~ ifelse(v120_nova == "Não", "Não", .x), .names = "{.col}_nova"),
+    
+    #121. Nesta UBS, o atendimento à(s) pessoa(s) com deficiência é realizado com o apoio da equipe multiprofissional (eMulti)?
+    v121_nova = case_when(v120_nova == "Não" ~ "Não realiza reuniões com eMulti", TRUE ~ v121))
+
+vars_descritiva_coord = c(
+  "V102",
+  
+  "V1031", "V1032", "V1033", "V1034", "v1035", "v1036", "v1037", "v1038",
+  
+  "v1041", "v1042", "v1043", "v1044", "v1045", "v1046",
+  
+  "v105",
+  
+  "v1061", "v1062", "v1063", "v1064", "v1065", "v1066",
+  "v1067", "v1068", "v1069", "v10610", "v10611", "v10612",
+  
+  "v107",
+  "v108_01",
+  
+  "v1091", "v1092", "v1093", "v1094", "v1095",
+  
+  "v1101", "v1102", "v1103", "v1104", "v1105", "v1106",
+  "v1107", "v1108", "v1109", "v11010", "v11011", "v11012",
+  
+  "v111", "v112", "v113", "v114", "v115_01", "v116_01",
+  
+  "v1171", "v1172", "v1173", "v1174", "v1175",
+  "v1176", "v1177", "v1178", "v1179", "v11710",
+  "v11711", "v11712", "v11713", "v11714", "v11715",
+  "v11716", "v11717", "v11718", "v11719", "v11720",
+  
+  "v1181", "v1182", "v1183", "v1184", "v1185",
+  
+  "v1191_nova", "v1192_nova", "v1193_nova", "v1194_nova", "v1195_nova", "v1196_nova", "v1197_nova", "v1198_nova", "v1199_nova",
+  "v11910_nova", "v11911_nova", "v11912_nova", "v11913_nova", "v11914_nova", "v11915_nova", "v11916_nova", "v11917_nova",
+  "v11918_nova", "v11919_nova", "v11920_nova", "v11921_nova", "v11922_nova",
+  
+  "v120_nova",
+  "v1201_nova",
+  "v12021_nova", "v12022_nova", "v12023_nova", "v12024_nova", "v12025_nova", "v12026_nova",
+  
+  "v121_nova")
+
+df1$v1201_nova = factor(df1$v1201_nova, levels = c("Não realiza reuniões com eMulti", "Sem periodicidade definida", "Mensal", "Quinzenal", "Semanal"), ordered = TRUE)
+
+enunciados_coord = c(
+  V102 = "Consultas são agendadas com hora marcada",
+  
+  V1031 = "Forma de agendamento: presencialmente na UBS",
+  V1032 = "Forma de agendamento: por telefone",
+  V1033 = "Forma de agendamento: pelo WhatsApp",
+  V1034 = "Forma de agendamento: por site específico da UBS",
+  v1035 = "Forma de agendamento: Meu SUS Digital",
+  v1036 = "Forma de agendamento: aplicativo desenvolvido para este fim",
+  v1037 = "Forma de agendamento: consulta agendada pelo ACS",
+  v1038 = "Forma de agendamento: outra",
+  
+  v1041 = "Demanda programada: próximo atendimento agendado ao final da consulta",
+  v1042 = "Demanda programada: consulta marcada pela equipe e comunicada ao usuário",
+  v1043 = "Demanda programada: próxima consulta marcada pelo usuário na UBS",
+  v1044 = "Demanda programada: usuário orientado a vir em dia específico sem agendamento prévio",
+  v1045 = "Demanda programada: usuário orientado a vir quando sentir necessidade, sem agendamento prévio",
+  v1046 = "Demanda programada: outro formato de marcação",
+  
+  v105 = "Disponibilidade de consultas para demanda espontânea todos os dias",
+  
+  v1061 = "Estratégia de comunicação: reuniões técnicas ou sessões clínicas conjuntas",
+  v1062 = "Estratégia de comunicação: consulta compartilhada",
+  v1063 = "Estratégia de comunicação: telessaúde",
+  v1064 = "Estratégia de comunicação: prontuário eletrônico compartilhado",
+  v1065 = "Estratégia de comunicação: e-mail",
+  v1066 = "Estratégia de comunicação: WhatsApp",
+  v1067 = "Estratégia de comunicação: ficha de referência/contrarreferência",
+  v1068 = "Estratégia de comunicação: contato telefônico",
+  v1069 = "Estratégia de comunicação: formulário de compartilhamento do cuidado",
+  v10610 = "Estratégia de comunicação: plano de cuidado compartilhado ou PTS",
+  v10611 = "Estratégia de comunicação: outro",
+  v10612 = "Não há estratégia de comunicação com outros pontos da rede",
+  
+  v107 = "Frequência de troca de informações com especialistas sobre usuários encaminhados",
+  v108_01 = "Frequência de recebimento do resumo de alta hospitalar dos usuários do território",
+  
+  v1091 = "Encaminhamento especializado: consulta marcada pela UBS e informada na hora ao usuário",
+  v1092 = "Encaminhamento especializado: consulta marcada pela UBS/sistema de regulação e informada posteriormente",
+  v1093 = "Encaminhamento especializado: consulta marcada pelo próprio usuário na central",
+  v1094 = "Encaminhamento especializado: usuário recebe ficha de encaminhamento/referência",
+  v1095 = "Encaminhamento especializado: usuário busca consulta especializada por conta própria",
+  
+  v1101 = "Serviço de referência definido: suspeita de câncer de mama",
+  v1102 = "Serviço de referência definido: suspeita de câncer do colo do útero",
+  v1103 = "Serviço de referência definido: gestação de alto risco",
+  v1104 = "Serviço de referência definido: parto/maternidade",
+  v1105 = "Serviço de referência definido: síndrome coronariana aguda",
+  v1106 = "Serviço de referência definido: acidente vascular encefálico",
+  v1107 = "Serviço de referência definido: atendimento odontológico especializado",
+  v1108 = "Serviço de referência definido: suspeita de câncer de boca",
+  v1109 = "Serviço de referência definido: violência(s)",
+  v11010 = "Serviço de referência definido: saúde mental",
+  v11011 = "Serviço de referência definido: outro",
+  v11012 = "Não existem serviços de referência definidos",
+  
+  v111 = "Utiliza protocolos técnicos para acesso aos serviços de atenção especializada",
+  v112 = "Há profissional responsável pela regulação assistencial antes da inserção no sistema",
+  v113 = "Encaminhamentos solicitados por enfermeiras(os) são aceitos no sistema de regulação",
+  v114 = "Há registro/lista dos usuários encaminhados para outros pontos da rede",
+  v115_01 = "Realiza monitoramento dos tempos de espera dos usuários encaminhados",
+  v116_01 = "Dispõe de acesso a transporte para usuários encaminhados a serviços especializados",
+  
+  v1171 = "Compartilha cuidado com equipe multiprofissional/eMulti",
+  v1172 = "Compartilha cuidado com CAPS",
+  v1173 = "Compartilha cuidado com CTA",
+  v1174 = "Compartilha cuidado com SAE/IST",
+  v1175 = "Compartilha cuidado com hospitais",
+  v1176 = "Compartilha cuidado com policlínicas regionais",
+  v1177 = "Compartilha cuidado com centro ambulatorial de especialidades",
+  v1178 = "Compartilha cuidado com maternidades",
+  v1179 = "Compartilha cuidado com polo da Academia da Saúde",
+  v11710 = "Compartilha cuidado com centro especializado: idoso",
+  v11711 = "Compartilha cuidado com centro especializado: doenças crônicas",
+  v11712 = "Compartilha cuidado com centro especializado: obesidade",
+  v11713 = "Compartilha cuidado com centro especializado: oncologia",
+  v11714 = "Compartilha cuidado com centro especializado: reabilitação",
+  v11715 = "Compartilha cuidado com CEREST",
+  v11716 = "Compartilha cuidado com centro especializado materno-infantil",
+  v11717 = "Compartilha cuidado com CEO",
+  v11718 = "Compartilha cuidado com Serviço de Especialidade em Saúde Bucal",
+  v11719 = "Compartilha cuidado com Serviço de Atenção Domiciliar",
+  v11720 = "Não compartilha o cuidado",
+  
+  v1181 = "Apoio da vigilância epidemiológica",
+  v1182 = "Apoio da vigilância sanitária",
+  v1183 = "Apoio da vigilância em saúde do trabalhador",
+  v1184 = "Apoio da vigilância ambiental",
+  v1185 = "Não recebe apoio de nenhum serviço de vigilância",
+  
+  v1191_nova = "eMulti: arte educador",
+  v1192_nova = "eMulti: assistente social",
+  v1193_nova = "eMulti: profissional de educação física",
+  v1194_nova = "eMulti: farmacêutica(o) clínica(o)",
+  v1195_nova = "eMulti: fisioterapeuta",
+  v1196_nova = "eMulti: fonoaudióloga(o)",
+  v1197_nova = "eMulti: médica(o) acupunturista",
+  v1198_nova = "eMulti: médica(o) cardiologista",
+  v1199_nova = "eMulti: médica(o) dermatologista",
+  v11910_nova = "eMulti: médica(o) endocrinologista",
+  v11911_nova = "eMulti: médica(o) geriatra",
+  v11912_nova = "eMulti: médica(o) ginecologista/obstetra",
+  v11913_nova = "eMulti: médica(o) hansenologista",
+  v11914_nova = "eMulti: médica(o) homeopata",
+  v11915_nova = "eMulti: médica(o) infectologista",
+  v11916_nova = "eMulti: médica(o) pediatra",
+  v11917_nova = "eMulti: médica(o) psiquiatra",
+  v11918_nova = "eMulti: médica(o) veterinária(o)",
+  v11919_nova = "eMulti: nutricionista",
+  v11920_nova = "eMulti: psicóloga(o)",
+  v11921_nova = "eMulti: sanitarista",
+  v11922_nova = "eMulti: terapeuta ocupacional",
+  
+  v120_nova = "Realiza reuniões das equipes da UBS com profissionais da eMulti",
+  v1201_nova = "Periodicidade das reuniões com profissionais da eMulti",
+  v12021_nova = "Atividade com eMulti: ações de caráter assistencial",
+  v12022_nova = "Atividade com eMulti: consulta presencial compartilhada",
+  v12023_nova = "Atividade com eMulti: plano de cuidado da APS/PTS",
+  v12024_nova = "Atividade com eMulti: grupos terapêuticos",
+  v12025_nova = "Atividade com eMulti: atendimento domiciliar",
+  v12026_nova = "Atividade com eMulti: teleconsulta",
+  
+  v121_nova = "Atendimento à pessoa com deficiência realizado com apoio da eMulti"
+)
+resultado_descritivo_coord = lapply(vars_descritiva_coord, function(v){
+  DescritivaCat(df1[[v]])
+})
+
+names(resultado_descritivo_coord) = vars_descritiva_coord
+
+resultado_final_coord = do.call(rbind, lapply(vars_descritiva_coord, function(v){
+  
+  tab = as.data.frame(DescritivaCat(df1[[v]]))
+  
+  tab$Categoria = rownames(tab)
+  tab$Variavel = v
+  tab$Enunciado = enunciados_coord[v]
+  
+  rownames(tab) = NULL
+  
+  tab = tab[, c("Variavel", "Enunciado", "Categoria", "Freq. Absoluta (N)", "Freq. Relativa (%)")]
+  
+  return(tab)
+}))
+
+# write.xlsx(
+#   resultado_final_coord %>% as.data.frame(),
+#   "Análise descritiva Coordenação do cuidado Contagem.xlsx"
+# )
